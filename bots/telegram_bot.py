@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import json
 import logging
 import os
@@ -163,7 +163,7 @@ def _handle_pptx_create(topic: str, title: str = "") -> tuple:
         f'{{"type":"content","title":"Tópico","bullets":["Ponto 1","Ponto 2","Ponto 3"]}},'
         f'{{"type":"content","title":"Tópico 2","bullets":["Ponto 1","Ponto 2"]}},'
         f'{{"type":"content","title":"Tópico 3","bullets":["Ponto 1","Ponto 2"]}},'
-        f'{{"type":"closing","title":"Obrigado!","subtitle":"contato@clilink.ai"}}]'
+        f'{{"type":"closing","title":"Obrigado!","subtitle":"contato@Tentacles.ai"}}]'
     }], temperature=0.5, max_tokens=1500)
     try:
         slides = _parse_json(raw)
@@ -200,7 +200,7 @@ def _handle_brain_set(provider: str, model: str = None) -> str:
 def _handle_general(user_msg: str) -> str:
     return _groq([
         {"role": "system", "content":
-            "Você é o assistente Clilink, agente de produtividade inteligente. "
+            "Você é o assistente Tentacles, agente de produtividade inteligente. "
             "Pode ajudar com Gmail, Calendar, Sheets, LinkedIn, PDFs e apresentações. "
             "Responda em português do Brasil de forma direta e útil."
         },
@@ -260,7 +260,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     log_octogent("telegram", "bot_iniciado")
     await update.message.reply_text(
-        "👋 Olá! Sou o assistente *Clilink*.\n\n"
+        "👋 Olá! Sou o assistente *Tentacles*.\n\n"
         "📧 /gmail — Emails recentes\n"
         "📅 /agenda — Agenda de hoje\n"
         "📊 /planilhas — Listar planilhas\n"
@@ -354,10 +354,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("🔍 Buscando tendências e preparando análise no Dashboard...")
             task_id = f"ln-an-{int(_time.time())}"
             prompt = (
-                "Voce e o agente linkedin-poster do Clilink.\n"
+                "Voce e o agente linkedin-poster do Tentacles.\n"
                 "TAREFA: Busque noticias trending via Google News, analise-as e sugira 3 temas de posts.\n"
                 "Depois de analisar, gere um post completo para o tema mais forte, gere a imagem e publique.\n"
-                "Ao final, escreva 'POST_DONE: [TEMA]' no canal clilink-events."
+                "Ao final, escreva 'POST_DONE: [TEMA]' no canal Tentacles-events."
             )
             file_path, result = await _execute_via_dashboard(
                 update, task_id, "LinkedIn: Análise de Tendências", "linkedin-poster",
@@ -378,7 +378,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.chat.send_action("upload_document")
         task_id = f"pdf-{int(_time.time())}"
         prompt = (
-            f"Voce e o agente files-assistant do Clilink.\n"
+            f"Voce e o agente files-assistant do Tentacles.\n"
             f"TAREFA: Crie um PDF profissional em portugues sobre: {user_msg}.\n"
             f"Use a ferramenta MCP pdf_create.\n"
             f"Ao concluir, grave o caminho do PDF em outputs/.status/{task_id}.done"
@@ -394,7 +394,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.chat.send_action("upload_document")
         task_id = f"pptx-{int(_time.time())}"
         prompt = (
-            f"Voce e o agente files-assistant do Clilink.\n"
+            f"Voce e o agente files-assistant do Tentacles.\n"
             f"TAREFA: Crie um PowerPoint profissional em portugues sobre: {user_msg}.\n"
             f"Use a ferramenta MCP pptx_create.\n"
             f"Ao concluir, grave o caminho do arquivo em outputs/.status/{task_id}.done"
@@ -443,7 +443,7 @@ def main():
         return
 
     print("=" * 55)
-    print("   Telegram Bot Clilink — Iniciando...")
+    print("   Telegram Bot Tentacles — Iniciando...")
     print("=" * 55)
 
     app = Application.builder().token(TELEGRAM_TOKEN).build()

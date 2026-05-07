@@ -1,4 +1,4 @@
-# Clilink — Plataforma de Agentes de Produtividade
+﻿# Tentacles — Plataforma de Agentes de Produtividade
 
 ## Objetivo
 Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calendar/Sheets, criação de PDFs/PPTX e chatbot Telegram — tudo orquestrado via Claude Code + Octogent dashboard.
@@ -23,11 +23,11 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 | files-assistant | `mcp_servers/files_mcp/server.py` | Criação de documentos profissionais: PDFs (genérico, cont... |
 | google-assistant | `mcp_servers/google_mcp/server.py` | Integração completa com Gmail, Google Calendar e Google S... |
 | linkedin-poster | `auto_poster.py` | Automação completa de postagem no LinkedIn: busca notícia... |
-| orchestrator | `.claude/skills/proactive-agent.md` | Agente coordenador central do Clilink. Monitora o canal `... |
-| platform-infra | — | - `start_clilink.ps1` — script launcher que sobe todos os... |
+| orchestrator | `.claude/skills/proactive-agent.md` | Agente coordenador central do Tentacles. Monitora o canal `... |
+| platform-infra | — | - `start_Tentacles.ps1` — script launcher que sobe todos os... |
 | telegram-bot | `bots/telegram_bot.py` | Interface de usuário via Telegram. Recebe mensagens, dete... |
-| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora RSS feeds e Google News via Terminal. Agora integrado à lógica de Agente (Claude/Gemini/Clilink). |
-| clilink-agent | `scripts/clilink_agent.py` | CLI Agente genérico que utiliza o 'Universal Brain' (Groq/OpenRouter) para orquestração. |
+| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora RSS feeds e Google News via Terminal. Agora integrado à lógica de Agente (Claude/Gemini/Tentacles). |
+| Tentacles-agent | `scripts/Tentacles_agent.py` | CLI Agente genérico que utiliza o 'Universal Brain' (Groq/OpenRouter) para orquestração. |
 
 
 
@@ -49,7 +49,7 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 
 ## Estrutura de Arquivos
 ```
-Clilink/
+Tentacles/
 ├── CLAUDE.md                          ← LEIA PRIMEIRO em toda sessão
 ├── auto_poster.py                     ← Loop LinkedIn (2h)
 ├── linkedin_mcp_server.py             ← MCP LinkedIn
@@ -167,7 +167,7 @@ Se o Octogent for reinstalado/atualizado, essa edição se perde — reaplicar.
 - ✅ Telegram Bot funcionando com detecção de intenção (Gmail, Calendar, Sheets, PDF, PPTX, LinkedIn)
 - ✅ Octogent Dashboard rodando com 7 tentáculos configurados
 - ✅ Bridge Telegram → Dashboard implementada via API HTTP
-- ✅ Sistema de log em `logs/activity.log` + canal `clilink-events`
+- ✅ Sistema de log em `logs/activity.log` + canal `Tentacles-events`
 - ✅ Scripts de automação em `scripts/` (new_tentacle, sync_tentacles)
 - ✅ Monitoramento de Tendências (Trends Intelligence) migrado para lógica orientada a Agente (Terminal)
 - ✅ Suporte multi-CLI (Claude Code / Gemini CLI) configurável via Settings no Dashboard

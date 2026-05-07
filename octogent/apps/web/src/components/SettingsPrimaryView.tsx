@@ -85,7 +85,7 @@ export const SettingsPrimaryView = ({
             <select value={preferredCli} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setPreferredCli(e.target.value)}>
               <option value="claude-code">Claude Code CLI</option>
               <option value="gemini-cli">Gemini CLI</option>
-              <option value="clilink-agent">Clilink Agent (Universal)</option>
+              <option value="tentacles-agent">Tentacles Agent (Universal)</option>
             </select>
           </div>
           <div className="settings-field">

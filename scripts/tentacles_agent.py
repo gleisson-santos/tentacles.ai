@@ -71,15 +71,15 @@ def query_llm(prompt, system_prompt=None):
 
 def main():
     print("===============================================")
-    print("   Clilink Agent — Universal Brain CLI")
+    print("   Tentacles Agent — Universal Brain CLI")
     print("===============================================")
     print(f"Provider: {load_config().get('active_provider')}")
     print("Type 'exit' or 'quit' to leave.")
     print("-----------------------------------------------")
 
     system_prompt = (
-        "Você é o Clilink Agent, um assistente de produtividade. "
-        "Você tem acesso ao contexto do projeto Clilink. "
+        "Você é o Tentacles Agent, um assistente de produtividade. "
+        "Você tem acesso ao contexto do projeto Tentacles. "
         "Siga as instruções do usuário de forma concisa e eficiente. "
         "Sempre responda em Português do Brasil."
     )

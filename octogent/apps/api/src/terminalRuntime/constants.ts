@@ -10,7 +10,7 @@ export const TERMINAL_BOOTSTRAP_COMMANDS: Record<string, string> = {
   codex: "codex",
   "claude-code": "claude",
   "gemini-cli": "gemini",
-  "clilink-agent": "python scripts/clilink_agent.py",
+  "tentacles-agent": "python scripts/tentacles_agent.py",
 };
 export const TERMINAL_SESSION_IDLE_GRACE_MS = 5 * 60 * 1000;
 export const TERMINAL_SCROLLBACK_MAX_BYTES = 512 * 1024;
