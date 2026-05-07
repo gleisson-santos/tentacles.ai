@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Secrets & Configs
+mcp_servers/google_mcp/credentials/token.json
+mcp_servers/google_mcp/credentials/client_secret.json
+.claude/settings.local.json
+.claude/settings.json
+.linkedin_mcp_token.json
+.claude.json
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Outputs
+outputs/pdfs/*
+!outputs/pdfs/.gitkeep
+outputs/presentations/*
+!outputs/presentations/.gitkeep
+outputs/.status/*
+!outputs/.status/.gitkeep
+
+# Node/Octogent
+node_modules/
+octogent/node_modules/
+octogent/dist/
+.octogent/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
