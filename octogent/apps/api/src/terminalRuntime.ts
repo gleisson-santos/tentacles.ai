@@ -457,7 +457,7 @@ export const createTerminalRuntime = ({
       ...(autoRenamePromptContext ? { autoRenamePromptContext } : {}),
       createdAt: new Date().toISOString(),
       workspaceMode,
-      agentProvider: agentProvider ?? DEFAULT_AGENT_PROVIDER,
+      agentProvider: agentProvider ?? uiState.preferredAgentProvider ?? DEFAULT_AGENT_PROVIDER,
       lifecycleState: "registered",
       lifecycleUpdatedAt: new Date().toISOString(),
       ...(initialPrompt ? { initialPrompt } : {}),

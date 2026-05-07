@@ -211,47 +211,61 @@ def _handle_general(user_msg: str) -> str:
 
 async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fallback_fn):
     try:
-        urllib.request.urlopen(f"{OCTOGENT_API}/api/deck/tentacles", timeout=2)
-    except Exception:
-        log("telegram", "dashboard_offline", f"fallback para {tentacle_id}")
-        if asyncio.iscoroutinefunction(fallback_fn):
-            return await fallback_fn()
-        return fallback_fn()
+        # 1. Verifica se o Dashboard está online e pega o provedor preferido
+        try:
+            with urllib.request.urlopen(f"{OCTOGENT_API}/api/ui-state", timeout=2) as resp:
+                ui_state = json.loads(resp.read().decode())
+                preferred_provider = ui_state.get("preferredAgentProvider", "claude-code")
+        except:
+            preferred_provider = "claude-code"
+            # Fallback para o fallback se o dashboard estiver offline
+            log("telegram", "dashboard_offline", f"fallback para {tentacle_id}")
+            if asyncio.iscoroutinefunction(fallback_fn):
+                return await fallback_fn()
+            return fallback_fn()
 
     payload = json.dumps({
         "name": name,
         "tentacleId": tentacle_id,
         "initialPrompt": prompt,
+        "agentProvider": preferred_provider,
         "workspaceMode": "shared"
     }).encode()
-    
+
     req = urllib.request.Request(f"{OCTOGENT_API}/api/terminals", data=payload)
     req.add_header("Content-Type", "application/json")
-    
+
     try:
         with urllib.request.urlopen(req) as resp:
             data = json.loads(resp.read().decode())
-            terminal_id = data["id"]
+            terminal_id = data.get("terminalId")
     except Exception as e:
         log("telegram", "erro_dashboard_api", str(e))
         if asyncio.iscoroutinefunction(fallback_fn):
             return await fallback_fn()
         return fallback_fn()
 
-    await update.message.reply_text(f"🚀 Enviado para o Dashboard (ID: `{terminal_id}`).\nAguardando conclusão...")
-    status_file = STATUS_DIR / f"{task_id}.done"
+    await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
+
+    # O arquivo .done deve ser gerado com o terminal_id
+    status_file = STATUS_DIR / f"{terminal_id}.done"
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
 
-    max_retries = 30
+    max_retries = 40 # Aumentado para 160 segundos
     for _ in range(max_retries):
         if status_file.exists():
             file_path = status_file.read_text().strip()
-            status_file.unlink()
-            return file_path, f"✅ Tarefa concluída via Dashboard!"
+            # Se for um arquivo temporário de status que contém o path
+            if os.path.exists(file_path):
+                status_file.unlink()
+                return file_path, f"✅ Tarefa concluída via Dashboard!"
+            else:
+                # Se o arquivo .done for apenas uma flag
+                status_file.unlink()
+                return None, f"✅ Tarefa concluída!"
         await asyncio.sleep(4)
 
-    return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard."
-
+    return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
 # ── Handlers Telegram ─────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):

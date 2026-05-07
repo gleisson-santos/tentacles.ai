@@ -1,3 +1,7 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import type { WorkspaceSetupStepId } from "@octogent/core";
 
 import {
@@ -32,6 +36,73 @@ const isWorkspaceSetupStepId = (value: string): value is WorkspaceSetupStepId =>
   value === "check-git" ||
   value === "check-curl" ||
   value === "create-tentacles";
+
+export const handleBrainConfigRoute: ApiRouteHandler = async (
+  { request, response, requestUrl, corsOrigin },
+  { workspaceCwd },
+) => {
+  if (requestUrl.pathname !== "/api/brain") {
+    return false;
+  }
+
+  const configPath = join(workspaceCwd, "config", "llm_config.json");
+  const envPath = join(workspaceCwd, ".env");
+
+  if (request.method === "GET") {
+    try {
+      const config = JSON.parse(readFileSync(configPath, "utf-8"));
+      writeJson(response, 200, config, corsOrigin);
+    } catch {
+      writeJson(response, 404, { error: "LLM config not found" }, corsOrigin);
+    }
+    return true;
+  }
+
+  if (request.method === "PATCH") {
+    const bodyResult = await readJsonBodyOrWriteError(request, response, corsOrigin);
+    if (!bodyResult.ok) return true;
+
+    const body = bodyResult.payload as any;
+    try {
+      let config: any = {};
+      if (existsSync(configPath)) {
+        config = JSON.parse(readFileSync(configPath, "utf-8"));
+      }
+
+      if (body.active_provider) config.active_provider = body.active_provider;
+      if (body.model && body.active_provider) {
+        if (!config.providers) config.providers = {};
+        if (!config.providers[body.active_provider]) config.providers[body.active_provider] = {};
+        config.providers[body.active_provider].model = body.model;
+      }
+
+      writeFileSync(configPath, JSON.stringify(config, null, 2), "utf-8");
+
+      // Handle API Key if provided
+      if (body.apiKey && body.active_provider) {
+        const envVar = config.providers?.[body.active_provider]?.api_key_env || `${body.active_provider.toUpperCase()}_API_KEY`;
+        let envContent = "";
+        if (existsSync(envPath)) {
+          envContent = readFileSync(envPath, "utf-8");
+        }
+        
+        const lines = envContent.split("\n");
+        const newLines = lines.filter(line => !line.startsWith(`${envVar}=`));
+        newLines.push(`${envVar}=${body.apiKey}`);
+        writeFileSync(envPath, newLines.join("\n"), "utf-8");
+        process.env[envVar] = body.apiKey; // Update current process env too
+      }
+
+      writeJson(response, 200, config, corsOrigin);
+    } catch (e) {
+      writeJson(response, 500, { error: `Failed to update brain config: ${e}` }, corsOrigin);
+    }
+    return true;
+  }
+
+  writeMethodNotAllowed(response, corsOrigin);
+  return true;
+};
 
 export const handleWorkspaceSetupRoute: ApiRouteHandler = async (
   { request, response, requestUrl, corsOrigin },

@@ -42,27 +42,36 @@ export const SettingsPrimaryView = ({
     claude: "CLAUDE_API_KEY"
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaved(false);
-    window.dispatchEvent(new CustomEvent('octogent-cmd', { 
-      detail: `universal-brain.set_active_llm("${provider}", "${model}")` 
-    }));
-    
-    // Save Preferred CLI
-    window.dispatchEvent(new CustomEvent('octogent-cmd', { 
-      detail: `ui.patch_state({ preferredAgentProvider: "${preferredCli}" })` 
-    }));
 
-    if (apiKey) {
-      const envName = envMap[provider] || `${provider.toUpperCase()}_API_KEY`;
-      window.dispatchEvent(new CustomEvent('octogent-cmd', { 
-        detail: `universal-brain.update_env_key("${envName}", "${apiKey}")` 
-      }));
+    try {
+      // 1. Save Brain Config (Provider, Model, API Key)
+      await fetch('/api/brain', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          active_provider: provider,
+          model: model,
+          apiKey: apiKey
+        })
+      });
+
+      // 2. Save UI State (Preferred CLI)
+      await fetch('/api/ui-state', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          preferredAgentProvider: preferredCli
+        })
+      });
+
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
     }
-    setTimeout(() => setIsSaved(true), 500);
-    setTimeout(() => setIsSaved(false), 3000);
   };
-
   return (
     <section className="settings-view" aria-label="Settings primary view">
       <section className="settings-panel" aria-label="LLM Configuration">

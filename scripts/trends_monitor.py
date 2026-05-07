@@ -40,7 +40,7 @@ def update_tentacle_status(state, detail=""):
     try:
         msg = f"[TENTACLE:{TENTACULO_ID}] {state.upper()}: {detail}"
         # Rota correta para mensagens de evento
-        requests.post(f"{api_url}/api/channels/clilink-events/messages", json={
+        requests.post(f"{api_url}/api/channels/tentacles-events/messages", json={
             "fromTerminalId": "trends-monitor-script",
             "content": msg
         }, timeout=0.5)

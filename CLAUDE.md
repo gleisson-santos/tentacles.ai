@@ -170,7 +170,11 @@ Se o Octogent for reinstalado/atualizado, essa edição se perde — reaplicar.
 - ✅ Sistema de log em `logs/activity.log` + canal `Tentacles-events`
 - ✅ Scripts de automação em `scripts/` (new_tentacle, sync_tentacles)
 - ✅ Monitoramento de Tendências (Trends Intelligence) migrado para lógica orientada a Agente (Terminal)
-- ✅ Suporte multi-CLI (Claude Code / Gemini CLI) configurável via Settings no Dashboard
+- ✅ Suporte multi-CLI (Claude Code / Gemini CLI / Tentacles Agent) configurável via Settings no Dashboard
+- ✅ Persistência de configurações do 'Universal Brain' (Multi-LLM) integrada ao Dashboard e .env
+- ✅ Bridge Telegram↔Dashboard aprimorada com polling de status e retorno automático de arquivos
+- ✅ Limpeza automática de terminais obsoletos no Dashboard para melhor organização
+
 
 ## Próximos Passos
 1. **Validar animações** — Confirmar se o tentáculo Trends Intelligence permanece animado durante todo o processo de resumo.

@@ -38,6 +38,7 @@ import {
   handlePromptsCollectionRoute,
   handleUiStateRoute,
   handleWorkspaceSetupRoute,
+  handleBrainConfigRoute,
 } from "./miscRoutes";
 import {
   handleMonitorConfigRoute,
@@ -133,6 +134,7 @@ const API_ROUTE_MAP: ReadonlyMap<string, readonly ApiRouteHandler[]> = new Map([
   ["github", [handleGithubSummaryRoute]],
   ["setup", [handleWorkspaceSetupRoute]],
   ["ui-state", [handleUiStateRoute]],
+  ["brain", [handleBrainConfigRoute]],
   ["monitor", [handleMonitorConfigRoute, handleMonitorFeedRoute, handleMonitorRefreshRoute]],
   [
     "conversations",
