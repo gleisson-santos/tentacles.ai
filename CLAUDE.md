@@ -19,14 +19,29 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
-| agent-skills | — | `.claude/skills/` — comportamento detalhado de cada agente |
-| trends-intelligence | `scripts/trends_monitor.py` | Monitoramento contínuo de notícias e tendências (2h loop) |
-| files-assistant | `mcp_servers/files_mcp/server.py` | Criação de PDFs e apresentações PowerPoint |
-| google-assistant | `mcp_servers/google_mcp/server.py` | Gmail, Google Calendar e Google Sheets |
-| linkedin-poster | `auto_poster.py` | Auto-post LinkedIn a cada 2h (Groq + Stability AI) |
-| orchestrator | `.claude/skills/proactive-agent.md` | Coordenador central, monitora canal `clilink-events` |
-| platform-infra | — | `start_clilink.ps1` — launcher que sobe todos os serviços |
-| telegram-bot | `bots/telegram_bot.py` | Interface Telegram → detecta intenção → executa via Dashboard |
+| agent-skills | `mcp_servers/agent-skills/server.py` | Habilidades e comportamentos dos agentes |
+| files-assistant | `mcp_servers/files-assistant/server.py` | Gerador de PDFs e PowerPoint |
+| google-assistant | `mcp_servers/google-assistant/server.py` | Assistente para Gmail, Agenda e Planilhas |
+| linkedin-poster | `mcp_servers/linkedin-poster/server.py` | Postagem automática no LinkedIn |
+| orchestrator | `mcp_servers/orchestrator/server.py` | Coordenador central do sistema |
+| platform-infra | `mcp_servers/platform-infra/server.py` | Infraestrutura e launcher do sistema |
+| telegram-bot | `mcp_servers/telegram-bot/server.py` | Interface via Telegram |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Estrutura de Arquivos
 ```

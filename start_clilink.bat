@@ -24,12 +24,12 @@ timeout /t 2 /nobreak > nul
 
 :: 3. LinkedIn Auto-Poster
 echo [2/4] Iniciando LinkedIn Auto-Poster...
-start "LinkedIn Poster" cmd /k "echo === LinkedIn Auto-Poster === && python auto_poster.py"
+start "LinkedIn Poster" cmd /k "echo === LinkedIn Auto-Poster === && python scripts/linkedin_poster.py"
 timeout /t 2 /nobreak > nul
 
 :: 4. Octogent Dashboard
 echo [3/4] Iniciando Octogent Dashboard...
-start "Octogent Dashboard" cmd /k "echo === Octogent Dashboard === && octogent"
+start "Octogent Dashboard" cmd /k "echo === Octogent Dashboard === && cd octogent && pnpm dev"
 timeout /t 3 /nobreak > nul
 
 :: 5. Telegram Bot

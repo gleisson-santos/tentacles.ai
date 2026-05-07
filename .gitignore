@@ -32,7 +32,9 @@ outputs/.status/*
 node_modules/
 octogent/node_modules/
 octogent/dist/
-.octogent/
+.octogent/state/
+.octogent/prompts/
+!.octogent/tentacles/
 
 # OS
 .DS_Store
