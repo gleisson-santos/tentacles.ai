@@ -20,6 +20,7 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
 | agent-skills | — | `.claude/skills/` — comportamento detalhado de cada agente |
+| trends-intelligence | `scripts/trends_monitor.py` | Monitoramento contínuo de notícias e tendências (2h loop) |
 | files-assistant | `mcp_servers/files_mcp/server.py` | Criação de PDFs e apresentações PowerPoint |
 | google-assistant | `mcp_servers/google_mcp/server.py` | Gmail, Google Calendar e Google Sheets |
 | linkedin-poster | `auto_poster.py` | Auto-post LinkedIn a cada 2h (Groq + Stability AI) |

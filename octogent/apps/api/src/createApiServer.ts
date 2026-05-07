@@ -1,6 +1,6 @@
 import { cpSync, existsSync as fsExistsSync, mkdirSync, readdirSync } from "node:fs";
 import { createServer } from "node:http";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 
 import { scanClaudeUsageChart } from "./claudeSessionScanner";
 import {
@@ -16,6 +16,7 @@ import type { CreateApiServerOptions } from "./createApiServer/types";
 import { createUpgradeHandler } from "./createApiServer/upgradeHandler";
 import { readGithubRepoSummary as readGithubRepoSummaryDefault } from "./githubRepoSummary";
 import { createMonitorService } from "./monitor";
+import { LocalTrendsProvider } from "./monitor/localTrendsProvider";
 import { createTerminalRuntime } from "./terminalRuntime";
 
 export const createApiServer = ({
@@ -36,7 +37,6 @@ export const createApiServer = ({
   allowRemoteAccess = false,
 }: CreateApiServerOptions = {}) => {
   const resolvedWorkspaceCwd = workspaceCwd ?? process.cwd();
-  // State lives in ~/.octogent/projects/<name>/ when provided, else falls back to <project>/.octogent/
   const resolvedStateDir = projectStateDir ?? join(resolvedWorkspaceCwd, ".octogent");
   let resolvedApiBaseUrl = apiBaseUrl ?? "http://127.0.0.1:8787";
   const getApiBaseUrl = () => resolvedApiBaseUrl;
@@ -50,8 +50,6 @@ export const createApiServer = ({
   const resolvedUserPromptsDir = join(resolvedStateDir, "prompts");
   const resolvedCorePromptsDir = join(resolvedStateDir, "prompts", "core");
 
-  // Sync builtin prompts into the project state dir on every start so prompt
-  // changes in the repo take effect without requiring manual cache cleanup.
   const sourceDir = promptsDir ?? join(resolvedWorkspaceCwd, "prompts");
   if (fsExistsSync(sourceDir)) {
     mkdirSync(resolvedCorePromptsDir, { recursive: true });
@@ -62,10 +60,6 @@ export const createApiServer = ({
     }
   }
 
-  // Read builtin prompts from the live source directory when available so new
-  // prompt files and prompt edits take effect without restarting the API.
-  // Keep the mirrored state copy as a fallback for packaged/runtime setups
-  // where the source prompts directory is unavailable.
   const resolvedPromptsDir = fsExistsSync(sourceDir) ? sourceDir : resolvedCorePromptsDir;
   const readClaudeUsageSnapshotWithDefault =
     readClaudeUsageSnapshot ??
@@ -107,6 +101,7 @@ export const createApiServer = ({
     monitorService ??
     createMonitorService({
       projectStateDir: resolvedStateDir,
+      providers: [new LocalTrendsProvider(resolvedWorkspaceCwd)]
     });
   const scanUsageHeatmapWithDefault =
     scanUsageHeatmap ??

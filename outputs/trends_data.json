@@ -1,0 +1,77 @@
+{
+    "last_update": "2026-05-06T23:42:02.312961",
+    "search_terms": [
+        "Artificial Intelligence",
+        "Automation",
+        "DeepSeek AI",
+        "n8n workflows"
+    ],
+    "google_news": [
+        {
+            "title": "KFSH Highlights Scalable AI Integration Model at C3 Davos of Healthcare Silicon Valley Summit - Estadão Blue Studio",
+            "link": "https://news.google.com/rss/articles/CBMihgJBVV95cUxPQXRBdGV1ZTJuUGZfbDlUeDJHd0l1Q1hxTk9YZWlnTVFWYlFiVm4wQVVtdi1TMmZ5WEs1S1ljbkI5a25ialFkLXkyS3I4NDJRSXNvZ192NVA1N3Q4c1F4dXd3SVk4eHdiLXA2WlkyLWk4RkMtSm12Y3JvNjJrUlY0RjN5R3FUbFowRmZnYU1xRWhSV21mNHlZU2xiZUh5YzdzSWdiQ0pvUHd5ZDhsSEhhYXZ0OUg2ZGstUEVjNDhWOG5xRlRBZ2VLNFhBaFlWWVduempkM1dGc1dPYmlDTEc1a3RQdHNaV2F1VjE0b21yeVBiRWlTN1hmSmRCTWVSc1I1akx5Qndn?oc=5",
+            "published": "Mon, 27 Apr 2026 13:10:01 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "LiveRamp, Okta, and Dynatrace Shares Are Soaring, What You Need To Know - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxObV9Td2VpYXI2dVJxV0FnZDRHUVZxM0JnZzJpOXhXLU51NUZBcjBIak5WYUFlS2EtWmZ1UGRYeUZLYW5mWURPb3RnU2pzRGluM1E5cmlLODRwdktSODZ2dHhuUzVTM3Via3dsZE5QbUg3RjVnRFNvVjVaXzJHTkZUdmhkME9GakNlWWFYU1ZpWkx2d0lmVHhkM1k5MWFOWGw1dlhNUWZnNEtGY1dlSFItRVBuQktJeG1YdnhnWlhFZjV3b09nbmcw?oc=5",
+            "published": "Fri, 01 May 2026 16:06:49 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Como o brasileiro tem usado a Inteligência Artificial? Veja o que diz estudo - Bem Paraná",
+            "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdlZiRHVveVJqSnNGQmRyUVI2SHUtY1lmWVV4N2ZoY3JGOGFnYUhOMVppNzZCNmxqX01WS0J5aE1pLVhEWWhzSjRmelF5VElRYVFLcEpHby15bE1va0JrYlZfVGstZ1Q0bTZXOHpwODVEeWdMQlh6UEFsR3JtZC1PY2NrOXhFLS1JVXEyQXNDWHFIZ1lGYlVTam9HQlRfSnZweHE2TWVhdmhiSHEzMnhGUURrWlF6aVV2Qlk0aUZWUjPSAcYBQVVfeXFMUEdyMVZHZjhHWGdZcDYzZlVkb3F2VkFJUnNaZWptWGVOSGtMOHRqdUlLQml4N0VndEVoZ05HWldCWkhfVjl3alM5eDZad3R1UXhKUndoUFI3VXpqSkNsUTFzb2t4azhnQnNXSldYTTBwQVRqcUZ1OUprekRabEZ3UGREN3JTSVZ6YVRqWllsOEJIamNmM0tiZGZZYmQ1bkFBdElzYjBTZ3hWRnBLaFdYMFJ6WUF2UkNiOWRiU0ZZVWxYS0Q5OGd3?oc=5",
+            "published": "Thu, 04 Dec 2025 08:00:00 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Apple Plans AI Photo Editing Overhaul Across iOS 27, macOS 27 - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPN1VTazRDTVJLc3JUSVQ1clh2TVd4TjF2SkJrNHVfd2ZyNGE1d2x5dHJjTGE0RWRwWmllT3A4M05YLTRzaC1OMkhPc2t2VEtFRlpyTnRKNHloTGpDaExncVdEWFZzYTNreUc2WExxUXJSTWhQLWlmVWpsSEJsd2dnZkVJVk16UDlacm1xaUthdXNzMGZoZ2cwYlRELUFsUWRHaUVxSW0xTl9EMXptTlk0aGQ5QnhCTnBqM1d3?oc=5",
+            "published": "Wed, 29 Apr 2026 17:04:27 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Google expands defence ties with Pentagon AI agreement - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQbFFJSmY2blJuQ1oxN1FpRGJhbWtJVXY5aVhFUXBWdWRIMkV3aWhhU0k1QWdQRTZuUjhHUFpvT1IzTDBIS2d0TVVLaUtRNHlydjFXbkJLUjJDTnRqZllqVWxEc3Z5VFVkRXA0b1JwZkNIX1pfT3p4VFVYdjBydlJzTUZDc21ORmd0dVZ0UGtYQUg0OGxTYkNjb0E5bFdhX2NjOXUwYlJiTmdRZHoxdXhrTVdQaU4?oc=5",
+            "published": "Tue, 28 Apr 2026 08:46:56 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Why Okta (OKTA) Stock Is Up Today - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOc0Rrd3NlS3E4TC1rYjNyZ0ppcEhCX0ZvLWJuWHlqREhsdDlmTkJSdmJEOVNEbEVETzZoZlpBSk5nLTA1NzNTaS1OUk9CTWlEa1hEdVJ1YXNqbnJNU0FEdUNGWVliWVBCMzFJT2NjUWZNTWp6RndaaWJlNnRYa3UzMjhIN3hjX0Uxbi1WT3FjMXF3VV9lYkE?oc=5",
+            "published": "Mon, 20 Apr 2026 19:21:04 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Falha crítica no n8n permite controle total de servidores e roubo de credenciais - SITEPD",
+            "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQY2w2bVpOYlMtT3pnZ0VGamVPak1TOENva2NhT25tOGpwMVVwdFlVeUNtclp3Tm5aTU9xZjVrTFQ1SS1iOWFMZGpRZDZKV0VzY1Z5RnE5ZzB6SXhuRk9zdGtocWhJVmRmMXJocmdsUUM5QzFOOHM4S0ZvcE1pU1hKcHRJYw?oc=5",
+            "published": "Fri, 06 Feb 2026 08:00:00 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Manifest OS Raises $60 Million Series A at $750 Million Valuation - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPb0NCLTBKQi1UVmVmZWZsellxajhuYm9nbl9qaDF3a2RaV1VRdGVUOUo2cVdUc1NRM21NU3l6NExrRE5QR1hvVGZjY3NxTzdFU3NRN3VxYmtuT0daQW51RmdaU2ctb1REdFQ2bUlFNDZKdE8zeHB1M0FQSlR6R1YxWXo2b2pYMTJXQThEaTNTbXlfbUphYnBIblB1cWN3b3lPVUlZLXphLTdsaFVOMG1kTWYxQTYyNVpUUGZLWE94dGE5SmRP?oc=5",
+            "published": "Tue, 28 Apr 2026 19:32:18 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Jefferies names AI winners as software sell-off takes a breather - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPWmo3Qy1obHNGaGg1UE9lQ1lqZS03ZENLV1RsRElxRVJWR3BPMldiMW9rcWwtWDhpWjZVY21idmFIOTdYNVNFRmhrMEdKWkx0ZEFuUzlnVkhhM2p6NUw4bEFBZmdOTlZBVWZjQ2lINy1pZHNLb2xqTjhJeF8tRVhxdlEzOWNYcFE0LTAzckdDeHZKVE16M2dqdDhZVVVHVUZTeDd1RUdzTUoyTEwxSFAwMGRHRVZtRkJaaWRyRQ?oc=5",
+            "published": "Tue, 24 Feb 2026 08:00:00 GMT",
+            "source": "Google News"
+        },
+        {
+            "title": "Nvidia Plans Open-Source AI Agent Platform - TradingView",
+            "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPbTFkM3pmWWdaeURMZ2xZeTZYdFIxN2pxd2dvUmNET0JHRlc5dWZfOWRGQkxIVTlFV2pCVWJDQlRteFpOemZab05OTWlueTNVbi1Da05hUHpXOVExMS1fbUp4ZDJYY1h5cnZ2QmFZeGMyZ1FQd1pZNGhhT1ZQeWxaWHpFTDlyOVFJanFKYkVnNmZwdGg1SG9rcHluekNZUVpNa204a3BfeFg?oc=5",
+            "published": "Tue, 10 Mar 2026 07:00:00 GMT",
+            "source": "Google News"
+        }
+    ],
+    "youtube_trends": [
+        {
+            "title": "Tudo sobre Artificial Intelligence em 2025",
+            "source": "YouTube (Sugestão)"
+        }
+    ]
+}

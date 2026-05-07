@@ -335,16 +335,27 @@ if __name__ == "__main__":
     print("=" * 55)
     print(f"  Intervalo : {INTERVAL_SECONDS // 60} min(s)")
     print(f"  Topicos   : {len(TOPICS)} categorias monitoradas")
-    print("  Pressione Ctrl+C para parar\n")
+    print("\n  [OPCAO] Digite 'agora' para iniciar um ciclo imediato")
+    print("          ou aguarde o Dashboard enviar um comando.")
+    print("          Pressione Ctrl+C para encerrar.\n")
 
-    while True:
-        try:
-            run_cycle()
-        except KeyboardInterrupt:
-            print("\n\n  Encerrado pelo usuário.")
-            break
-        except Exception as e:
-            print(f"\n  ERRO no ciclo: {e}")
-            log("linkedin", "erro_ciclo", str(e)[:200])
-            print(f"  Tentando novamente em {INTERVAL_SECONDS // 60} minuto(s)...")
-        time.sleep(INTERVAL_SECONDS)
+    # Espera inicial para não sair rodando automático
+    user_input = input("  Aguardando comando (ou digite 'agora'): ").strip().lower()
+
+    if user_input == "agora":
+        while True:
+            try:
+                run_cycle()
+            except KeyboardInterrupt:
+                print("\n\n  Encerrado pelo usuário.")
+                break
+            except Exception as e:
+                print(f"\n  ERRO no ciclo: {e}")
+                log("linkedin", "erro_ciclo", str(e)[:200])
+                print(f"  Tentando novamente em {INTERVAL_SECONDS // 60} minuto(s)...")
+            time.sleep(INTERVAL_SECONDS)
+    else:
+        print("\n  Modo de espera ativado. Use o Dashboard ou Telegram para disparar.")
+        # Mantém o processo vivo para o Dashboard poder chamá-lo
+        while True:
+            time.sleep(60)

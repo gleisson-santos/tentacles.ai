@@ -435,6 +435,14 @@ async def _reply(update: Update, text: str, file_path: str = None):
         await update.message.reply_text(text[i:i+4000], parse_mode="Markdown")
 
 def main():
+    if not TELEGRAM_TOKEN:
+        print("❌ ERRO: TELEGRAM_BOT_TOKEN não encontrado no .env")
+        return
+
+    print("=" * 55)
+    print("   Telegram Bot Clilink — Iniciando...")
+    print("=" * 55)
+
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start",     cmd_start))
     app.add_handler(CommandHandler("gmail",     cmd_gmail))
@@ -445,7 +453,20 @@ def main():
     app.add_handler(CommandHandler("pptx",      cmd_pptx))
     app.add_handler(CommandHandler("brain",     cmd_brain))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    app.run_polling()
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            print(f"📡 Tentativa de conexão {attempt + 1}/{max_retries}...")
+            log_octogent("telegram", "bot_iniciado", "polling ativo")
+            app.run_polling(close_loop=False)
+            break
+        except Exception as e:
+            print(f"⚠️ Erro de rede no Telegram: {e}")
+            if attempt < max_retries - 1:
+                _time.sleep(10)
+            else:
+                print("❌ Falha crítica ao conectar no Telegram após várias tentativas.")
 
 if __name__ == "__main__":
     main()

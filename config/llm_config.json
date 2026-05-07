@@ -2,7 +2,7 @@
   "active_provider": "openrouter",
   "providers": {
     "openrouter": {
-      "model": "x-ai/grok-beta",
+      "model": "openai/gpt-4o-mini-2024-07-18",
       "api_key_env": "OPENROUTER_API_KEY"
     },
     "groq": {

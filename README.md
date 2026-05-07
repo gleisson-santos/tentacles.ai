@@ -25,7 +25,11 @@ O sistema utiliza o protocolo **MCP (Model Context Protocol)** para conectar mod
 ### 🧠 Cérebro Universal (Multi-LLM)
 - **Flexibilidade:** Troca dinâmica de modelos (Grok, GPT-4o, Llama 3.3, Gemini) via Dashboard ou Telegram.
 - **Economia:** Usa Claude Code para orquestração e LLMs externas (OpenRouter/Groq) para geração de conteúdo longo.
-- **Gestão de Chaves:** Configuração segura de chaves de API diretamente pelo chat.
+
+### 📰 Inteligência de Tendências (Trends Monitor)
+- **Monitoramento:** Varre Google News e YouTube a cada 2 horas em busca de novidades tech.
+- **Configuração Visual:** Gestão de termos de busca diretamente no menu **Monitor [5]** do Dashboard.
+- **Animação Real-time:** Tentáculos no Dashboard refletem a atividade de busca em tempo real.
 
 ### 🤖 Interface de Comando (Telegram & Dashboard)
 - **Telegram Bot:** Controle total do sistema via chat, com detecção de intenção inteligente.

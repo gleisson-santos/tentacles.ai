@@ -1,7 +1,3 @@
-"""
-LLM Bridge MCP Server
-Permite ao Claude acionar outras LLMs de forma dinâmica lendo configurações de um arquivo JSON.
-"""
 import os
 import json
 import httpx
@@ -13,6 +9,7 @@ mcp = FastMCP("Universal Brain")
 ROOT_DIR = Path(__file__).parent.parent.parent
 CONFIG_FILE = ROOT_DIR / "config" / "llm_config.json"
 ENV_FILE = ROOT_DIR / ".env"
+OCTOGENT_API = "http://127.0.0.1:8787"
 
 def _load_config():
     if not CONFIG_FILE.exists():
@@ -26,6 +23,32 @@ def _load_config():
         }
     with open(CONFIG_FILE, "r") as f:
         return json.load(f)
+
+@mcp.tool()
+def setup_x_monitor(bearer_token: str) -> str:
+    """
+    Configura o X Monitor enviando as credenciais diretamente para a API do Octogent.
+    """
+    payload = {
+        "x": {
+            "bearerToken": bearer_token,
+            "terms": [
+                "Artificial Intelligence", "Automation", "Claude AI", 
+                "Grok AI", "n8n", "DeepSeek", "Llama 3"
+            ]
+        }
+    }
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.patch(f"{OCTOGENT_API}/api/monitor/config", json=payload)
+            if resp.status_code == 200:
+                # Também salva no .env para persistência
+                update_env_key("X_BEARER_TOKEN", bearer_token)
+                return "✅ X Monitor configurado e ativado com sucesso no Dashboard!"
+            else:
+                return f"❌ Erro API Octogent ({resp.status_code}): {resp.text}"
+    except Exception as e:
+        return f"❌ Falha ao conectar na API do Dashboard: {e}"
 
 @mcp.tool()
 def get_current_llm_config() -> str:
@@ -64,7 +87,6 @@ def update_env_key(key_name: str, key_value: str) -> str:
     with open(ENV_FILE, "w") as f:
         f.writelines(new_lines)
     
-    # Atualiza o ambiente atual também
     os.environ[key_name] = key_value
     return f"✅ Chave {key_name} salva com sucesso no .env"
 
@@ -86,7 +108,7 @@ def set_active_llm(provider: str, model: str = None) -> str:
     
     key_env = config["providers"][provider]["api_key_env"]
     if not os.getenv(key_env):
-        return f"⚠️ Provedor alterado para {provider}, mas a chave {key_env} não foi encontrada. Use `/brain set_key {key_env} SUA_CHAVE` no Telegram."
+        return f"⚠️ Provedor alterado para {provider}, mas a chave {key_env} não foi encontrada."
     
     return f"✅ Cérebro atualizado: {provider} ({model or config['providers'][provider]['model']})"
 
@@ -95,15 +117,11 @@ def query_llm(prompt: str, system_prompt: str = None) -> str:
     config = _load_config()
     active_provider = config["active_provider"]
     provider_data = config["providers"].get(active_provider)
-    
-    if not provider_data:
-        return f"Erro: Provedor '{active_provider}' não configurado."
+    if not provider_data: return f"Erro: Provedor '{active_provider}' não configurado."
     
     model = provider_data["model"]
     api_key = os.getenv(provider_data["api_key_env"])
-    
-    if not api_key:
-        return f"❌ Erro: API Key ({provider_data['api_key_env']}) faltando. Configure-a no .env ou via Dashboard/Telegram."
+    if not api_key: return f"❌ Erro: API Key ({provider_data['api_key_env']}) faltando."
 
     if active_provider == "openrouter":
         return _query_openrouter(prompt, model, system_prompt, api_key)
