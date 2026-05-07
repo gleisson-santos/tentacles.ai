@@ -1,77 +1,9 @@
 {
-    "last_update": "2026-05-07T09:57:23.936543",
+    "last_update": "2026-05-07T15:56:37.878727",
     "search_terms": [
-        "Artificial Intelligence",
-        "Automation",
-        "DeepSeek AI",
-        "n8n workflows"
+        "Make automação",
+        "geminicli",
+        "Claude code CLI"
     ],
-    "google_news": [
-        {
-            "title": "BNY Shares Jump 65% As AI Hiring Push Accelerates - TradingView",
-            "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOdklrRzhFNmxqTWFrcmxycmxyTXlFOTVoMVBqY183Y1Z1Z1NlNldTVWtJMGhnVklUU1JUZVdLUXlfWE9tUWh6ZE01S2x1TFN0OUM0dGQycDAyVHpMZEw4X2dUVGEwMkFQMEJhNGZsSEVneGZPcGo3WkVpWnU0Y0RjdUo0SUZjRjE3MnhUei1NRDdvZTRRUVdLZHRqQV8zbkxJNHRLRDFsZmg3aldTckZEZw?oc=5",
-            "published": "Tue, 05 May 2026 11:50:04 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "KFSH Highlights Scalable AI Integration Model at C3 Davos of Healthcare Silicon Valley Summit - Estadão Blue Studio",
-            "link": "https://news.google.com/rss/articles/CBMihgJBVV95cUxPQXRBdGV1ZTJuUGZfbDlUeDJHd0l1Q1hxTk9YZWlnTVFWYlFiVm4wQVVtdi1TMmZ5WEs1S1ljbkI5a25ialFkLXkyS3I4NDJRSXNvZ192NVA1N3Q4c1F4dXd3SVk4eHdiLXA2WlkyLWk4RkMtSm12Y3JvNjJrUlY0RjN5R3FUbFowRmZnYU1xRWhSV21mNHlZU2xiZUh5YzdzSWdiQ0pvUHd5ZDhsSEhhYXZ0OUg2ZGstUEVjNDhWOG5xRlRBZ2VLNFhBaFlWWVduempkM1dGc1dPYmlDTEc1a3RQdHNaV2F1VjE0b21yeVBiRWlTN1hmSmRCTWVSc1I1akx5Qndn?oc=5",
-            "published": "Mon, 27 Apr 2026 13:10:01 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Como o brasileiro tem usado a Inteligência Artificial? Veja o que diz estudo - Bem Paraná",
-            "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOdlZiRHVveVJqSnNGQmRyUVI2SHUtY1lmWVV4N2ZoY3JGOGFnYUhOMVppNzZCNmxqX01WS0J5aE1pLVhEWWhzSjRmelF5VElRYVFLcEpHby15bE1va0JrYlZfVGstZ1Q0bTZXOHpwODVEeWdMQlh6UEFsR3JtZC1PY2NrOXhFLS1JVXEyQXNDWHFIZ1lGYlVTam9HQlRfSnZweHE2TWVhdmhiSHEzMnhGUURrWlF6aVV2Qlk0aUZWUjPSAcYBQVVfeXFMUEdyMVZHZjhHWGdZcDYzZlVkb3F2VkFJUnNaZWptWGVOSGtMOHRqdUlLQml4N0VndEVoZ05HWldCWkhfVjl3alM5eDZad3R1UXhKUndoUFI3VXpqSkNsUTFzb2t4azhnQnNXSldYTTBwQVRqcUZ1OUprekRabEZ3UGREN3JTSVZ6YVRqWllsOEJIamNmM0tiZGZZYmQ1bkFBdElzYjBTZ3hWRnBLaFdYMFJ6WUF2UkNiOWRiU0ZZVWxYS0Q5OGd3?oc=5",
-            "published": "Thu, 04 Dec 2025 08:00:00 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Apple Plans AI Photo Editing Overhaul Across iOS 27, macOS 27 - TradingView",
-            "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPN1VTazRDTVJLc3JUSVQ1clh2TVd4TjF2SkJrNHVfd2ZyNGE1d2x5dHJjTGE0RWRwWmllT3A4M05YLTRzaC1OMkhPc2t2VEtFRlpyTnRKNHloTGpDaExncVdEWFZzYTNreUc2WExxUXJSTWhQLWlmVWpsSEJsd2dnZkVJVk16UDlacm1xaUthdXNzMGZoZ2cwYlRELUFsUWRHaUVxSW0xTl9EMXptTlk0aGQ5QnhCTnBqM1d3?oc=5",
-            "published": "Wed, 29 Apr 2026 17:04:27 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Why Okta (OKTA) Stock Is Up Today - TradingView",
-            "link": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOc0Rrd3NlS3E4TC1rYjNyZ0ppcEhCX0ZvLWJuWHlqREhsdDlmTkJSdmJEOVNEbEVETzZoZlpBSk5nLTA1NzNTaS1OUk9CTWlEa1hEdVJ1YXNqbnJNU0FEdUNGWVliWVBCMzFJT2NjUWZNTWp6RndaaWJlNnRYa3UzMjhIN3hjX0Uxbi1WT3FjMXF3VV9lYkE?oc=5",
-            "published": "Mon, 20 Apr 2026 19:21:04 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Falha crítica no n8n permite controle total de servidores e roubo de credenciais - SITEPD",
-            "link": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQY2w2bVpOYlMtT3pnZ0VGamVPak1TOENva2NhT25tOGpwMVVwdFlVeUNtclp3Tm5aTU9xZjVrTFQ1SS1iOWFMZGpRZDZKV0VzY1Z5RnE5ZzB6SXhuRk9zdGtocWhJVmRmMXJocmdsUUM5QzFOOHM4S0ZvcE1pU1hKcHRJYw?oc=5",
-            "published": "Fri, 06 Feb 2026 08:00:00 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Nvidia Plans Open-Source AI Agent Platform - TradingView",
-            "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPbTFkM3pmWWdaeURMZ2xZeTZYdFIxN2pxd2dvUmNET0JHRlc5dWZfOWRGQkxIVTlFV2pCVWJDQlRteFpOemZab05OTWlueTNVbi1Da05hUHpXOVExMS1fbUp4ZDJYY1h5cnZ2QmFZeGMyZ1FQd1pZNGhhT1ZQeWxaWHpFTDlyOVFJanFKYkVnNmZwdGg1SG9rcHluekNZUVpNa204a3BfeFg?oc=5",
-            "published": "Tue, 10 Mar 2026 07:00:00 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Fluxo de trabalho de IA, definido - IBM",
-            "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFA1TXRWN0xfckxGSVFVMGRqb2JtS3dySHUwaDZOTDFLMkthbGg5N3d4eGZia29ZUUZmM3Y0N3J3WlVSWGFlT3lpZTdzLWJKbXZEeENnSTl4S0pRNFJXWXdV?oc=5",
-            "published": "Fri, 31 Jan 2025 05:13:27 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "SPX: S&P 500 Futures Sharply Lower as Pessimism Grows Over AI-First Future - TradingView",
-            "link": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNN2d0dDQ2aV9fdDVacjlsV1E4VXJWQkFjd3RTY2lNRjJKSFktZnpBUnNhdWxpRnF2a2ZlQ1MtTHBEM2dVTk5nMTd3YmtrNGFacjFHdnVNeUpYOFU3a0RLNzAtcUlJVzdMOXp4LWd4SVJxT04zODZKMW9PWEJib0M5WlduMFhOZFk0bDhyTUE3Nk10NTlUelh3YVVxNG1RekxyTG1haWl1a0s3WGVFY3k1Z1p3Y1AxeE5vUXliLUtvVjdPRXo3ZUN6bTVuOGFOUG8?oc=5",
-            "published": "Mon, 16 Feb 2026 08:00:00 GMT",
-            "source": "Google News"
-        },
-        {
-            "title": "Zoom Recognizes the Rise of AI-Powered Businesses of One with Inaugural Solopreneur 50 - Estadão Blue Studio",
-            "link": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxPOTE2SzRoSnlLVzlQVnVBbDNSd0xMMWJNcTc0a3Myb1pPZHlYQUp6VmNycjJ5eWktck5HbUFrWGRjQU5Nblp1TlltOGZQYXFsSnFYRjFJVW9uX2lFb1UybXhJTHRydXBTVS10U0hoSUd2Rk5OMUxibHc2WmREWjVZdjBOUFRHUkVCRGlvSXBXQjZhQ2ZFb25OR2lUYkxuZVMwUzhOenQ2MG9haVVFd0t6M3lXMkVCVTFMM1M1RW5sSHVBRlRIeDJXQmtZNHlGWVJRcmNSNG1mNjdxRm5rTEZRU0RIUWRlMC1zQ2lNaDlRQ2djV25qeWpwNVNFV1U?oc=5",
-            "published": "Mon, 04 May 2026 14:14:14 GMT",
-            "source": "Google News"
-        }
-    ],
-    "youtube_trends": [
-        {
-            "title": "Destaque: Artificial Intelligence",
-            "source": "YouTube"
-        }
-    ]
+    "google_news": []
 }

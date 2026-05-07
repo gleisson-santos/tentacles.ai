@@ -16,7 +16,7 @@ const parsePort = (value: string | undefined, fallback: number) => {
 const host = process.env.HOST ?? "127.0.0.1";
 const port = parsePort(process.env.OCTOGENT_API_PORT ?? process.env.PORT, 8787);
 const allowRemoteAccess = process.env.OCTOGENT_ALLOW_REMOTE_ACCESS === "1";
-const workspaceCwd = process.env.OCTOGENT_WORKSPACE_CWD ?? process.cwd();
+const workspaceCwd = (process.env.OCTOGENT_WORKSPACE_CWD ?? process.cwd()).trim();
 const projectStateDir = process.env.OCTOGENT_PROJECT_STATE_DIR;
 const promptsDir = process.env.OCTOGENT_PROMPTS_DIR;
 const webDistDir = process.env.OCTOGENT_WEB_DIST_DIR;
@@ -32,9 +32,9 @@ const validateStartupEnv = () => {
     }
   }
 
-  if (process.env.OCTOGENT_WORKSPACE_CWD && !existsSync(process.env.OCTOGENT_WORKSPACE_CWD)) {
+  if (workspaceCwd && !existsSync(workspaceCwd)) {
     console.error(
-      `OCTOGENT_WORKSPACE_CWD directory does not exist: ${process.env.OCTOGENT_WORKSPACE_CWD}`,
+      `OCTOGENT_WORKSPACE_CWD directory does not exist: ${workspaceCwd}`,
     );
     process.exit(1);
   }

@@ -20,13 +20,14 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
 | agent-skills | — | `.claude/skills/` — comportamento detalhado de cada agente |
-| trends-intelligence | `scripts/trends_monitor.py` | Monitoramento contínuo de notícias e tendências (2h loop) |
 | files-assistant | `mcp_servers/files_mcp/server.py` | Criação de PDFs e apresentações PowerPoint |
 | google-assistant | `mcp_servers/google_mcp/server.py` | Gmail, Google Calendar e Google Sheets |
 | linkedin-poster | `auto_poster.py` | Auto-post LinkedIn a cada 2h (Groq + Stability AI) |
 | orchestrator | `.claude/skills/proactive-agent.md` | Coordenador central, monitora canal `clilink-events` |
 | platform-infra | — | `start_clilink.ps1` — launcher que sobe todos os serviços |
 | telegram-bot | `bots/telegram_bot.py` | Interface Telegram → detecta intenção → executa via Dashboard |
+| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora notícias (Terminal) via Claude/Gemini/Clilink Agent |
+| clilink-agent | `scripts/clilink_agent.py` | CLI Agente Universal que utiliza Groq/OpenRouter |
 
 ## Estrutura de Arquivos Principais
 ```
@@ -34,13 +35,11 @@ Clilink/
 ├── CLAUDE.md                          ← Referência para Claude Code
 ├── GEMINI.md                          ← LEIA PRIMEIRO (Instruções para Gemini CLI)
 ├── auto_poster.py                     ← Loop LinkedIn (2h)
-├── linkedin_mcp_server.py             ← MCP LinkedIn
-├── mcp_servers/                       ← Servidores MCP (Google, Files)
-├── bots/                              ← Bot Telegram
-├── scripts/                           ← Utilitários (new_tentacle, sync_tentacles)
-├── logs/                              ← Logs de atividade
-├── outputs/                           ← Arquivos gerados (PDFs, PPTX)
-└── .claude/                           ← Skills e configurações de agentes
+├── scripts/
+│   ├── clilink_agent.py               ← CLI Agente Universal
+│   ├── trends_monitor.py              ← Script de tendências
+│   ├── new_tentacle.py                ← Criador de tentáculos
+│   └── sync_tentacles.py              ← Sincronizador
 ```
 
 ## Comandos de Execução Comuns

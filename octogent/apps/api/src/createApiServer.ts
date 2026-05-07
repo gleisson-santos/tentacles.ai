@@ -38,6 +38,7 @@ export const createApiServer = ({
 }: CreateApiServerOptions = {}) => {
   const resolvedWorkspaceCwd = workspaceCwd ?? process.cwd();
   const resolvedStateDir = projectStateDir ?? join(resolvedWorkspaceCwd, ".octogent");
+  
   let resolvedApiBaseUrl = apiBaseUrl ?? "http://127.0.0.1:8787";
   const getApiBaseUrl = () => resolvedApiBaseUrl;
   const getApiPort = () => {
@@ -47,6 +48,23 @@ export const createApiServer = ({
       return "8787";
     }
   };
+
+  const runtimeOptions: Parameters<typeof createTerminalRuntime>[0] = {
+    workspaceCwd: resolvedWorkspaceCwd,
+    projectStateDir: resolvedStateDir,
+    getApiBaseUrl,
+  };
+  if (gitClient) {
+    runtimeOptions.gitClient = gitClient;
+  }
+
+  const runtime = createTerminalRuntime(runtimeOptions);
+
+  const resolvedMonitorService = monitorService ?? createMonitorService({
+    projectStateDir: resolvedStateDir,
+    providers: [new LocalTrendsProvider(resolvedWorkspaceCwd, () => runtime)]
+  });
+
   const resolvedUserPromptsDir = join(resolvedStateDir, "prompts");
   const resolvedCorePromptsDir = join(resolvedStateDir, "prompts", "core");
 
@@ -87,22 +105,6 @@ export const createApiServer = ({
         cwd: resolvedWorkspaceCwd,
       }));
 
-  const runtimeOptions: Parameters<typeof createTerminalRuntime>[0] = {
-    workspaceCwd: resolvedWorkspaceCwd,
-    projectStateDir: resolvedStateDir,
-    getApiBaseUrl,
-  };
-  if (gitClient) {
-    runtimeOptions.gitClient = gitClient;
-  }
-
-  const runtime = createTerminalRuntime(runtimeOptions);
-  const monitorServiceWithDefault =
-    monitorService ??
-    createMonitorService({
-      projectStateDir: resolvedStateDir,
-      providers: [new LocalTrendsProvider(resolvedWorkspaceCwd)]
-    });
   const scanUsageHeatmapWithDefault =
     scanUsageHeatmap ??
     ((scope: "all" | "project") => scanClaudeUsageChart(scope, resolvedWorkspaceCwd));
@@ -124,7 +126,7 @@ export const createApiServer = ({
     readCodexUsageSnapshot,
     readGithubRepoSummary: readGithubRepoSummaryWithDefault,
     scanUsageHeatmap: scanUsageHeatmapWithDefault,
-    monitorService: monitorServiceWithDefault,
+    monitorService: resolvedMonitorService,
     invalidateClaudeUsageCache,
     codeIntelStore,
     allowRemoteAccess,

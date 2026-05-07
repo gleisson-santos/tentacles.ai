@@ -10,7 +10,7 @@ export type MonitorUsageSnapshot = {
 };
 
 export type MonitorPost = {
-  source: "x";
+  source: string;
   id: string;
   text: string;
   author: string;

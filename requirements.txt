@@ -2,6 +2,7 @@
 groq
 python-telegram-bot
 mcp[fastmcp]
+python-dotenv
 
 # Google Workspace APIs
 google-api-python-client

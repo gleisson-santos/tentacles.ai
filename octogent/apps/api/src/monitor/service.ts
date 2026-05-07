@@ -283,17 +283,6 @@ export const createMonitorService = ({
         return toFeedSnapshot(config, cache, now);
       }
 
-      if (!config.providers.x.credentials) {
-        const nextCache: PersistedMonitorCache = {
-          ...cache,
-          providerId: config.providerId,
-          queryTerms: [...config.queryTerms],
-          lastError: "X credentials are not configured.",
-        };
-        repository.writeCache(nextCache);
-        return toFeedSnapshot(config, nextCache, now);
-      }
-
       if (config.queryTerms.length === 0) {
         const nextCache: PersistedMonitorCache = {
           ...cache,

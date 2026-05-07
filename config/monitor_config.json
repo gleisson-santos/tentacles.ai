@@ -1,9 +1,8 @@
 {
   "searchTerms": [
-    "Artificial Intelligence",
-    "Automation",
-    "DeepSeek AI",
-    "n8n workflows"
+    "Make automação",
+    "geminicli",
+    "Claude code CLI"
   ],
-  "refreshIntervalMinutes": 120
+  "refreshIntervalMinutes": 1
 }

@@ -29,6 +29,10 @@ export const SettingsPrimaryView = ({
   const [model, setModel] = useState("openai/gpt-4o-mini-2024-07-18");
   const [apiKey, setApiKey] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const [preferredCli, setPreferredCli] = useState<string>(
+    // @ts-ignore
+    window.octogentUiState?.preferredAgentProvider || "claude-code"
+  );
 
   const envMap: Record<string, string> = {
     openrouter: "OPENROUTER_API_KEY",
@@ -43,6 +47,12 @@ export const SettingsPrimaryView = ({
     window.dispatchEvent(new CustomEvent('octogent-cmd', { 
       detail: `universal-brain.set_active_llm("${provider}", "${model}")` 
     }));
+    
+    // Save Preferred CLI
+    window.dispatchEvent(new CustomEvent('octogent-cmd', { 
+      detail: `ui.patch_state({ preferredAgentProvider: "${preferredCli}" })` 
+    }));
+
     if (apiKey) {
       const envName = envMap[provider] || `${provider.toUpperCase()}_API_KEY`;
       window.dispatchEvent(new CustomEvent('octogent-cmd', { 
@@ -62,7 +72,7 @@ export const SettingsPrimaryView = ({
         </header>
         <div className="settings-llm-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
           <div className="settings-field">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>Provedor</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>Provedor Principal</label>
             <select value={provider} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setProvider(e.target.value)}>
               <option value="openrouter">OpenRouter (Grok, Gemini, Llama)</option>
               <option value="claude">Claude (Nativo)</option>
@@ -71,10 +81,18 @@ export const SettingsPrimaryView = ({
             </select>
           </div>
           <div className="settings-field">
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>Modelo</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>CLI Agente Preferido</label>
+            <select value={preferredCli} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setPreferredCli(e.target.value)}>
+              <option value="claude-code">Claude Code CLI</option>
+              <option value="gemini-cli">Gemini CLI</option>
+              <option value="clilink-agent">Clilink Agent (Universal)</option>
+            </select>
+          </div>
+          <div className="settings-field">
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>Modelo (Brain)</label>
             <input type="text" value={model} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setModel(e.target.value)} />
           </div>
-          <div className="settings-field" style={{ gridColumn: 'span 2' }}>
+          <div className="settings-field">
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>Chave de API (Opcional)</label>
             <input type="password" placeholder="••••••••••••••••" style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setApiKey(e.target.value)} />
           </div>

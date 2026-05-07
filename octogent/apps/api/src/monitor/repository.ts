@@ -55,7 +55,7 @@ const normalizeMonitorPost = (value: unknown): PersistedMonitorCache["posts"][nu
     typeof record.matchedQueryTerm === "string" ? record.matchedQueryTerm : null;
 
   if (
-    source !== "x" ||
+    typeof source !== "string" ||
     id === null ||
     text === null ||
     author === null ||

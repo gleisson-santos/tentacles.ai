@@ -597,6 +597,9 @@ export const createTerminalRuntime = ({
       if (patch.terminalCompletionSound !== undefined) {
         uiState.terminalCompletionSound = patch.terminalCompletionSound;
       }
+      if (patch.preferredAgentProvider !== undefined) {
+        uiState.preferredAgentProvider = patch.preferredAgentProvider;
+      }
       if (patch.minimizedTerminalIds !== undefined) {
         uiState.minimizedTerminalIds = [...patch.minimizedTerminalIds];
       }

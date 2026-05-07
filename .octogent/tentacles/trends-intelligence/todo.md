@@ -1,0 +1,7 @@
+- [x] Criar estrutura de tentáculo no Octogent
+- [x] Implementar leitura dinâmica de termos de busca
+- [x] Ajustar intervalo para 1 minuto (teste)
+- [x] Implementar animação de 'processing' no Dashboard durante a busca
+- [ ] Voltar intervalo para 1 hora após validação
+- [ ] Adicionar fonte de dados do YouTube Trends
+- [ ] Implementar alerta no Telegram quando uma tendência "explosiva" for detectada

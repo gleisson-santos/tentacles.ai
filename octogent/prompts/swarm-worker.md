@@ -48,3 +48,5 @@ Watch for these in your own behavior:
 Your terminal ID is `{{terminalId}}`. The API is at `http://localhost:{{apiPort}}`.
 
 REMINDER: Complete only the assigned todo item. Run tests. {{workspaceReminder}} Report status.
+
+- Trends Intelligence: Always update config/monitor_config.json when requested to change search terms or monitoring intervals.

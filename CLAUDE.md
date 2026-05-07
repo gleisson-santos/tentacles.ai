@@ -19,13 +19,17 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
-| agent-skills | `mcp_servers/agent-skills/server.py` | Habilidades e comportamentos dos agentes |
-| files-assistant | `mcp_servers/files-assistant/server.py` | Gerador de PDFs e PowerPoint |
-| google-assistant | `mcp_servers/google-assistant/server.py` | Assistente para Gmail, Agenda e Planilhas |
-| linkedin-poster | `mcp_servers/linkedin-poster/server.py` | Postagem automática no LinkedIn |
-| orchestrator | `mcp_servers/orchestrator/server.py` | Coordenador central do sistema |
-| platform-infra | `mcp_servers/platform-infra/server.py` | Infraestrutura e launcher do sistema |
-| telegram-bot | `mcp_servers/telegram-bot/server.py` | Interface via Telegram |
+| agent-skills | — | - `.claude/skills/` — comportamento detalhado de cada agente |
+| files-assistant | `mcp_servers/files_mcp/server.py` | Criação de documentos profissionais: PDFs (genérico, cont... |
+| google-assistant | `mcp_servers/google_mcp/server.py` | Integração completa com Gmail, Google Calendar e Google S... |
+| linkedin-poster | `auto_poster.py` | Automação completa de postagem no LinkedIn: busca notícia... |
+| orchestrator | `.claude/skills/proactive-agent.md` | Agente coordenador central do Clilink. Monitora o canal `... |
+| platform-infra | — | - `start_clilink.ps1` — script launcher que sobe todos os... |
+| telegram-bot | `bots/telegram_bot.py` | Interface de usuário via Telegram. Recebe mensagens, dete... |
+| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora RSS feeds e Google News via Terminal. Agora integrado à lógica de Agente (Claude/Gemini/Clilink). |
+| clilink-agent | `scripts/clilink_agent.py` | CLI Agente genérico que utiliza o 'Universal Brain' (Groq/OpenRouter) para orquestração. |
+
+
 
 
 
@@ -165,11 +169,13 @@ Se o Octogent for reinstalado/atualizado, essa edição se perde — reaplicar.
 - ✅ Bridge Telegram → Dashboard implementada via API HTTP
 - ✅ Sistema de log em `logs/activity.log` + canal `clilink-events`
 - ✅ Scripts de automação em `scripts/` (new_tentacle, sync_tentacles)
-- ⚠️ Dashboard bridge em fase de testes (prompt auto-submit sendo ajustado)
+- ✅ Monitoramento de Tendências (Trends Intelligence) migrado para lógica orientada a Agente (Terminal)
+- ✅ Suporte multi-CLI (Claude Code / Gemini CLI) configurável via Settings no Dashboard
 
 ## Próximos Passos
-1. **Testar bridge completo** — Pedir PDF no Telegram e confirmar que aparece no Dashboard E retorna o arquivo
-2. **Múltiplas tarefas simultâneas** — Implementar `asyncio.create_task()` para paralelismo no bot
+1. **Validar animações** — Confirmar se o tentáculo Trends Intelligence permanece animado durante todo o processo de resumo.
+2. **Múltiplas tarefas simultâneas** — Implementar `asyncio.create_task()` para paralelismo no bot.
+
 
 ## Regras para Claude
 1. **SEMPRE leia este CLAUDE.md primeiro** — contém todo o estado do projeto

@@ -8,6 +8,15 @@ import os
 import re
 import tempfile
 import time
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Adiciona a raiz do projeto ao sys.path para permitir imports de 'logs' e outros módulos
+ROOT = Path(__file__).parent.parent
+sys.path.append(str(ROOT))
 
 import feedparser
 import httpx

@@ -1,4 +1,5 @@
 import type { TerminalCompletionSoundId } from "./completionSound";
+import type { TerminalAgentProvider } from "./agentRuntime";
 
 export type PersistedUiState = {
   activePrimaryNav?: number;
@@ -13,6 +14,7 @@ export type PersistedUiState = {
   isClaudeUsageSectionExpanded?: boolean;
   isCodexUsageSectionExpanded?: boolean;
   terminalCompletionSound?: TerminalCompletionSoundId;
+  preferredAgentProvider?: TerminalAgentProvider;
   minimizedTerminalIds?: string[];
   terminalWidths?: Record<string, number>;
   canvasOpenTerminalIds?: string[];

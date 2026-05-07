@@ -1,4 +1,4 @@
-import { type PersistedUiState, isTerminalCompletionSoundId } from "../terminalRuntime";
+import { type PersistedUiState, isTerminalAgentProvider, isTerminalCompletionSoundId } from "../terminalRuntime";
 
 export const parseUiStatePatch = (
   payload: unknown,
@@ -12,6 +12,16 @@ export const parseUiStatePatch = (
 
   const record = payload as Record<string, unknown>;
   const patch: PersistedUiState = {};
+
+  if (record.preferredAgentProvider !== undefined) {
+    if (!isTerminalAgentProvider(record.preferredAgentProvider)) {
+      return {
+        patch: null,
+        error: "preferredAgentProvider must be one of the supported agent providers.",
+      };
+    }
+    patch.preferredAgentProvider = record.preferredAgentProvider;
+  }
 
   if (record.activePrimaryNav !== undefined) {
     if (
