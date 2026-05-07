@@ -84,12 +84,12 @@ def main():
         "Sempre responda em Português do Brasil."
     )
 
-    # Check if initial prompt was passed as argument (non-interactive mode)
+    # Check if initial prompt was passed as argument
     if len(sys.argv) > 1:
         prompt = " ".join(sys.argv[1:])
         result = query_llm(prompt, system_prompt)
         print(f"\n{result}\n")
-        return
+        # Do not return here, fall through to the interactive loop
 
     while True:
         try:

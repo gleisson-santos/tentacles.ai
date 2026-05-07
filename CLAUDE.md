@@ -173,6 +173,8 @@ Se o Octogent for reinstalado/atualizado, essa edição se perde — reaplicar.
 - ✅ Suporte multi-CLI (Claude Code / Gemini CLI / Tentacles Agent) configurável via Settings no Dashboard
 - ✅ Persistência de configurações do 'Universal Brain' (Multi-LLM) integrada ao Dashboard e .env
 - ✅ Bridge Telegram↔Dashboard aprimorada com polling de status e retorno automático de arquivos
+- ✅ Correção de SyntaxError no Telegram Bot e melhoria na resiliência da Bridge
+- ✅ Monitoramento de Tendências (Trends Intelligence) agora opera em modo contínuo (--loop) via Agente
 - ✅ Limpeza automática de terminais obsoletos no Dashboard para melhor organização
 
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 LOG_FILE = Path(__file__).parent / "activity.log"
-OCTOGENT_CHANNEL = "clilink-events"
+OCTOGENT_CHANNEL = "tentacles-events"
 
 
 def log(agent: str, action: str, detail: str = "") -> None:

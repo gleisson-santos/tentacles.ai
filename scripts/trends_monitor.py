@@ -139,8 +139,11 @@ if __name__ == "__main__":
     loop = "--loop" in sys.argv
     
     if loop:
+        print("🔄 Modo MONITORAMENTO ATIVO iniciado (Ctrl+C para parar)")
         while True:
             interval = update_monitor()
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            print(f"[{timestamp}] 💤 Aguardando {interval} minutos para próxima atualização...")
             time.sleep(interval * 60)
     else:
         update_monitor()

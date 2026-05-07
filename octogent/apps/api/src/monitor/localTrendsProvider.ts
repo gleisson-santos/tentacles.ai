@@ -47,9 +47,9 @@ export class LocalTrendsProvider implements MonitorProviderAdapter {
 
         const prompt = `ATUALIZAÇÃO DE TENDÊNCIAS REQUISITADA:
 1. Leia os termos em config/monitor_config.json.
-2. Execute o script 'python scripts/trends_monitor.py' para coletar e resumir notícias.
-3. Verifique se o arquivo 'outputs/trends_data.json' foi atualizado corretamente.
-4. Confirme a conclusão da tarefa.`;
+2. Execute o script 'python scripts/trends_monitor.py --loop' para manter o monitoramento ativo e contínuo.
+3. O Dashboard lerá os resultados automaticamente de 'outputs/trends_data.json'.
+4. Mantenha este terminal aberto para monitoramento em tempo real.`;
 
         if (existingLive) {
           // Só envia se não estiver ocupado (idle) ou se passou muito tempo

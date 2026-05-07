@@ -26,7 +26,7 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 | orchestrator | `.claude/skills/proactive-agent.md` | Coordenador central, monitora canal `tentacles-events` |
 | platform-infra | — | `start_tentacles.ps1` — launcher que sobe todos os serviços |
 | telegram-bot | `bots/telegram_bot.py` | Interface Telegram → detecta intenção → executa via Dashboard |
-| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora notícias (Terminal) via Claude/Gemini/Tentacles Agent |
+| trends-intelligence | `scripts/trends_monitor.py` | Monitoramento contínuo de notícias (Terminal --loop) via Agente |
 | tentacles-agent | `scripts/tentacles_agent.py` | CLI Agente Universal que utiliza Groq/OpenRouter |
 
 ## Estrutura de Arquivos Principais

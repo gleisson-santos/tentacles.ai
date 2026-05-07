@@ -224,48 +224,54 @@ async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fal
                 return await fallback_fn()
             return fallback_fn()
 
-    payload = json.dumps({
-        "name": name,
-        "tentacleId": tentacle_id,
-        "initialPrompt": prompt,
-        "agentProvider": preferred_provider,
-        "workspaceMode": "shared"
-    }).encode()
+        # O payload e a requisição devem estar DENTRO do try principal
+        payload = json.dumps({
+            "name": name,
+            "tentacleId": tentacle_id,
+            "initialPrompt": prompt,
+            "agentProvider": preferred_provider,
+            "workspaceMode": "shared"
+        }).encode()
 
-    req = urllib.request.Request(f"{OCTOGENT_API}/api/terminals", data=payload)
-    req.add_header("Content-Type", "application/json")
+        req = urllib.request.Request(f"{OCTOGENT_API}/api/terminals", data=payload)
+        req.add_header("Content-Type", "application/json")
 
-    try:
-        with urllib.request.urlopen(req) as resp:
-            data = json.loads(resp.read().decode())
-            terminal_id = data.get("terminalId")
+        try:
+            with urllib.request.urlopen(req) as resp:
+                data = json.loads(resp.read().decode())
+                terminal_id = data.get("terminalId")
+        except Exception as e:
+            log("telegram", "erro_dashboard_api", str(e))
+            if asyncio.iscoroutinefunction(fallback_fn):
+                return await fallback_fn()
+            return fallback_fn()
+
+        await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
+
+        # O arquivo .done deve ser gerado com o terminal_id
+        status_file = STATUS_DIR / f"{terminal_id}.done"
+        STATUS_DIR.mkdir(parents=True, exist_ok=True)
+
+        max_retries = 40 # Aumentado para 160 segundos
+        for _ in range(max_retries):
+            if status_file.exists():
+                file_path = status_file.read_text().strip()
+                # Se for um arquivo temporário de status que contém o path
+                if os.path.exists(file_path):
+                    status_file.unlink()
+                    return file_path, f"✅ Tarefa concluída via Dashboard!"
+                else:
+                    # Se o arquivo .done for apenas uma flag
+                    status_file.unlink()
+                    return None, f"✅ Tarefa concluída!"
+            await asyncio.sleep(4)
+
+        return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
+
     except Exception as e:
-        log("telegram", "erro_dashboard_api", str(e))
-        if asyncio.iscoroutinefunction(fallback_fn):
-            return await fallback_fn()
-        return fallback_fn()
+        log("telegram", "erro_geral_dashboard", str(e))
+        return None, f"❌ Erro ao comunicar com Dashboard: {e}"
 
-    await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
-
-    # O arquivo .done deve ser gerado com o terminal_id
-    status_file = STATUS_DIR / f"{terminal_id}.done"
-    STATUS_DIR.mkdir(parents=True, exist_ok=True)
-
-    max_retries = 40 # Aumentado para 160 segundos
-    for _ in range(max_retries):
-        if status_file.exists():
-            file_path = status_file.read_text().strip()
-            # Se for um arquivo temporário de status que contém o path
-            if os.path.exists(file_path):
-                status_file.unlink()
-                return file_path, f"✅ Tarefa concluída via Dashboard!"
-            else:
-                # Se o arquivo .done for apenas uma flag
-                status_file.unlink()
-                return None, f"✅ Tarefa concluída!"
-        await asyncio.sleep(4)
-
-    return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
 # ── Handlers Telegram ─────────────────────────────────────────────────────────
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -371,7 +377,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Voce e o agente linkedin-poster do Tentacles.\n"
                 "TAREFA: Busque noticias trending via Google News, analise-as e sugira 3 temas de posts.\n"
                 "Depois de analisar, gere um post completo para o tema mais forte, gere a imagem e publique.\n"
-                "Ao final, escreva 'POST_DONE: [TEMA]' no canal Tentacles-events."
+                "Ao final, escreva 'POST_DONE: [TEMA]' no canal tentacles-events."
             )
             file_path, result = await _execute_via_dashboard(
                 update, task_id, "LinkedIn: Análise de Tendências", "linkedin-poster",
