@@ -95,6 +95,7 @@ Clilink/
 - **Telegram Bot Token** — Definido em `.env`
 - **Telegram User ID permitido** — Definido em `.env`
 - **Google OAuth2** — Credenciais em `mcp_servers/google_mcp/credentials/` (Funcionando)
+- **Configuração de LLM** — Gerida em `config/llm_config.json` e sincronizada via `/brain` no Telegram.
 
 ### Requer setup manual ⚠️
 - (Nenhum setup crítico pendente no momento)

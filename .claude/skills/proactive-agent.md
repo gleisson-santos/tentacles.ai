@@ -15,12 +15,25 @@ npx skills add https://github.com/halthelobster/proactive-agent --skill proactiv
 |---|---|---|
 | "emails", "inbox", "gmail" | gmail-manager | gmail_* tools |
 | "agenda", "evento", "calendário" | calendar-manager | calendar_* tools |
-| "post", "linkedin", "publicar" | content-creator | auto_poster.py |
-| "contrato", "currículo", "PDF" | content-creator | pdf_* tools |
-| "apresentação", "slides", "PowerPoint" | content-creator | pptx_* tools |
-| "planilha", "sheets", "tabela" | google MCP | sheets_* tools |
+| "post", "linkedin", "publicar" | content-creator | universal-brain + auto_poster.py |
+| "contrato", "currículo", "PDF" | content-creator | universal-brain + pdf_* tools |
+| "apresentação", "slides", "PowerPoint" | content-creator | universal-brain + pptx_* tools |
+| "brain", "think", "IA externa" | universal-brain | query_llm |
 
-## Comportamento de orquestração
+## Estratégia de Custo (Multi-LLM)
+
+Para economizar créditos do Claude, siga esta regra:
+1. **Raciocínio e Orquestração:** Claude Code (Cérebro Central).
+2. **Escrita de Textos Longos e Criatividade:** Use a ferramenta `universal-brain.query_llm`.
+3. **Preferência:** O sistema está configurado para usar o OpenRouter com o modelo `x-ai/grok-2.0-fast` por padrão.
+
+### Exemplo de Uso:
+Se o usuário pedir: "Escreva um post longo sobre Python".
+Ação correta: 
+1. Chamar `universal-brain.query_llm(prompt="Escreva um post longo sobre Python", provider="openrouter")`.
+2. O Claude apenas recebe o texto pronto e mostra ao usuário ou salva em arquivo.
+
+## Iniciar o Octogent (dashboard visual)
 
 ### Ao receber pedido
 1. Identifique a intenção principal (pode ser múltipla)

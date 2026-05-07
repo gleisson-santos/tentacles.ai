@@ -1,0 +1,22 @@
+{
+  "active_provider": "openrouter",
+  "providers": {
+    "openrouter": {
+      "model": "x-ai/grok-beta",
+      "api_key_env": "OPENROUTER_API_KEY"
+    },
+    "groq": {
+      "model": "llama-3.3-70b-versatile",
+      "api_key_env": "GROQ_API_KEY"
+    },
+    "gemini": {
+      "model": "gemini-1.5-pro",
+      "api_key_env": "GEMINI_API_KEY"
+    },
+    "openai": {
+      "model": "gpt-4o",
+      "api_key_env": "OPENAI_API_KEY"
+    }
+  },
+  "prefer_claude_for_complex_tasks": true
+}

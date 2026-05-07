@@ -22,6 +22,11 @@ O sistema utiliza o protocolo **MCP (Model Context Protocol)** para conectar mod
 - **PDFs:** Criação de documentos estruturados (contratos, relatórios, dietas).
 - **PowerPoint:** Geração automática de apresentações profissionais.
 
+### 🧠 Cérebro Universal (Multi-LLM)
+- **Flexibilidade:** Troca dinâmica de modelos (Grok, GPT-4o, Llama 3.3, Gemini) via Dashboard ou Telegram.
+- **Economia:** Usa Claude Code para orquestração e LLMs externas (OpenRouter/Groq) para geração de conteúdo longo.
+- **Gestão de Chaves:** Configuração segura de chaves de API diretamente pelo chat.
+
 ### 🤖 Interface de Comando (Telegram & Dashboard)
 - **Telegram Bot:** Controle total do sistema via chat, com detecção de intenção inteligente.
 - **Octogent Dashboard:** Interface visual para monitoramento e orquestração dos "tentáculos" (agentes).
