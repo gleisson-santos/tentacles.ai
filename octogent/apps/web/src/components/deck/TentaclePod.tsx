@@ -76,6 +76,7 @@ export type TentaclePodProps = {
   onSaveSuggestedSkills?:
     | ((tentacleId: string, suggestedSkills: string[]) => Promise<boolean>)
     | undefined;
+  onSpawnSwarm?: ((tentacleId: string, workspaceMode: "shared" | "worktree") => void) | undefined;
 };
 
 export const TentaclePod = ({
@@ -92,6 +93,7 @@ export const TentaclePod = ({
   availableSkills,
   isSavingSkills,
   onSaveSuggestedSkills,
+  onSpawnSwarm,
 }: TentaclePodProps) => {
   const progressPct =
     tentacle.todoTotal > 0 ? Math.round((tentacle.todoDone / tentacle.todoTotal) * 100) : 0;
@@ -135,7 +137,11 @@ export const TentaclePod = ({
             ← Back
           </button>
         )}
-        <button type="button" className="deck-pod-btn">
+        <button
+          type="button"
+          className="deck-pod-btn"
+          onClick={() => onSpawnSwarm?.(tentacle.tentacleId, "worktree")}
+        >
           Spawn
         </button>
         <button

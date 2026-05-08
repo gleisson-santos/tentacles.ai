@@ -59,6 +59,7 @@ type DeckPrimaryViewProps = {
   onRefreshWorkspaceSetup: () => Promise<WorkspaceSetupSnapshot | null>;
   onRunWorkspaceSetupStep: (stepId: WorkspaceSetupStepId) => Promise<WorkspaceSetupSnapshot | null>;
   suppressWorkspaceSetupCard?: boolean;
+  onSpawnSwarm?: (tentacleId: string, workspaceMode: "shared" | "worktree") => void;
 };
 
 export const DeckPrimaryView = ({
@@ -69,6 +70,7 @@ export const DeckPrimaryView = ({
   onRefreshWorkspaceSetup,
   onRunWorkspaceSetupStep,
   suppressWorkspaceSetupCard = false,
+  onSpawnSwarm,
 }: DeckPrimaryViewProps) => {
   const [tentacles, setTentacles] = useState<DeckTentacleSummary[]>([]);
   const [focus, setFocus] = useState<FocusState | null>(null);
@@ -531,6 +533,7 @@ export const DeckPrimaryView = ({
                 availableSkills={availableSkills}
                 isSavingSkills={savingTentacleSkillsId === t.tentacleId}
                 onSaveSuggestedSkills={handleTentacleSkillsSave}
+                onSpawnSwarm={onSpawnSwarm}
               />
             </div>
           );

@@ -294,7 +294,7 @@ export const useCanvasGraphData = ({
     nodes.push(node);
     currentNodesById.set(tentacleNodeId, node);
 
-    // Active terminal session nodes — one per terminal in this tentacle
+    // Active terminal session nodes ÔÇö one per terminal in this tentacle
     if (activeTerminals) {
       for (const activeTerminal of activeTerminals) {
         const sessionNodeId = buildActiveSessionNodeId(activeTerminal.terminalId);
@@ -335,7 +335,7 @@ export const useCanvasGraphData = ({
     }
   }
 
-  // Octoboss — synthetic always-present node
+  // Octoboss ÔÇö synthetic always-present node
   const prevBoss = prevNodes.get(OCTOBOSS_NODE_ID);
   const octobossColor = getAccentPrimary();
   const octobossNode: GraphNode = {
@@ -354,9 +354,22 @@ export const useCanvasGraphData = ({
   nodes.push(octobossNode);
   currentNodesById.set(OCTOBOSS_NODE_ID, octobossNode);
 
-  // Connect octoboss to every tentacle node
+  // Connect octoboss or parent tentacle to every tentacle node
   for (const tentacleId of allTentacleIds) {
-    edges.push({ source: OCTOBOSS_NODE_ID, target: buildTentacleNodeId(tentacleId) });
+    if (tentacleId === OCTOBOSS_ID) continue;
+
+    let sourceNodeId = OCTOBOSS_NODE_ID;
+    const tentacleTerminals = activeTerminalsByTentacle.get(tentacleId);
+    const parentTerminalId = tentacleTerminals?.find((t) => t.parentTerminalId)?.parentTerminalId;
+
+    if (parentTerminalId) {
+      const parentTerminal = columns.find((c) => c.terminalId === parentTerminalId);
+      if (parentTerminal && parentTerminal.tentacleId !== tentacleId) {
+        sourceNodeId = buildTentacleNodeId(parentTerminal.tentacleId);
+      }
+    }
+
+    edges.push({ source: sourceNodeId, target: buildTentacleNodeId(tentacleId) });
   }
 
   // Link active terminals belonging to octoboss

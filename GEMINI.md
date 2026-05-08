@@ -45,20 +45,11 @@ Tentacles/
 ## Comandos de Execução Comuns
 
 ```powershell
-# Instalar dependências
-pip install -r requirements.txt
+# Configurar tudo (1ª vez ou novo PC)
+./setup.ps1
 
-# LinkedIn auto-poster
-python auto_poster.py
-
-# Telegram Bot
-python bots/telegram_bot.py
-
-# Dashboard Octogent
-octogent
-
-# Setup Google OAuth2
-python mcp_servers/google_mcp/auth.py
+# Iniciar todos os serviços de uma vez
+./start_tentacles.ps1
 
 # Criar novo tentáculo
 python scripts/new_tentacle.py <nome> "<descricao>" [--mcp] [--color "#RRGGBB"]
@@ -66,6 +57,13 @@ python scripts/new_tentacle.py <nome> "<descricao>" [--mcp] [--color "#RRGGBB"]
 
 ## Arquitetura Bridge (Telegram → Octogent)
 O bot do Telegram detecta intenções e se comunica com o Octogent via API HTTP (porta 8787). O Octogent orquestra a execução via Claude Code/Gemini CLI. Os resultados são comunicados via arquivos `.done` em `outputs/.status/`.
+
+## Arquitetura do Gráfico de Orquestração (Hierarquia)
+- **Onde alterar a lógica:** `octogent/apps/web/src/app/hooks/useCanvasGraphData.ts`
+- **Onde alterar as linhas/curvatura:** `octogent/apps/web/src/components/canvas/OctopusNode.tsx`
+- **Onde alterar animações/bolinhas:** `octogent/apps/web/src/components/CanvasPrimaryView.tsx`
+
+O sistema agora suporta **Deep Nesting** (Pai > Filho > Neto) baseado no `parentTerminalId` dos agentes. Se um agente for criado a partir de outro tentáculo, a linha de conexão seguirá a hierarquia em vez de ir para o Octoboss central.
 
 ## Regras e Convenções para Gemini CLI
 1. **Prioridade de Contexto:** Sempre consulte `GEMINI.md` e `CLAUDE.md` para entender o estado atual e as regras do projeto.
