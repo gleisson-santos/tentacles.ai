@@ -69,10 +69,10 @@ type CanvasPrimaryViewProps = {
   onCanvasOpenTentacleIdsChange?: (ids: string[]) => void;
   onCanvasTerminalsPanelWidthChange?: (width: number | null) => void;
   onCreateAgent?: (tentacleId: string) => Promise<string | undefined> | undefined;
-  onCreateTerminal?: () => Promise<string | undefined> | undefined;
-  onCreateWorktreeTerminal?: () => Promise<string | undefined> | undefined;
+  onCreateTerminal?: (tentacleId?: string) => Promise<string | undefined> | undefined;
+  onCreateWorktreeTerminal?: (tentacleId?: string) => Promise<string | undefined> | undefined;
   onCreateTentacle?: () => void;
-  onSpawnSwarm?: (tentacleId: string, workspaceMode: TerminalWorkspaceMode) => Promise<void>;
+  onSpawnSwarm?: (tentacleId: string, workspaceMode: "shared" | "worktree") => Promise<void> | void;
   onSolveTodoItem?: (tentacleId: string, itemIndex: number) => Promise<void> | void;
   onOctobossAction?: (action: string) => Promise<string | undefined> | undefined;
   onTentacleAction?: (
@@ -595,7 +595,7 @@ export const CanvasPrimaryView = ({
     const drag = dividerDragRef.current;
     if (!drag) return;
     const containerWidth = containerRef.current?.clientWidth ?? 1200;
-    // Dragging left → terminals grow, dragging right → terminals shrink
+    // Dragging left ÔåÆ terminals grow, dragging right ÔåÆ terminals shrink
     const delta = drag.startX - e.clientX;
     const newWidth = Math.max(
       TERMINAL_MIN_WIDTH,
@@ -668,7 +668,7 @@ export const CanvasPrimaryView = ({
   const onNavigateRef = useRef(onNavigateToConversation);
   onNavigateRef.current = onNavigateToConversation;
 
-  // Native contextmenu listener — must be native to reliably preventDefault
+  // Native contextmenu listener ÔÇö must be native to reliably preventDefault
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
@@ -935,7 +935,9 @@ export const CanvasPrimaryView = ({
   for (const edge of sessionEdges) {
     const group = sessionEdgesBySource.get(edge.source.id);
     if (group) {
-      group.push(edge);
+      if (!group.some((e) => e.target.id === edge.target.id)) {
+        group.push(edge);
+      }
     } else {
       sessionEdgesBySource.set(edge.source.id, [edge]);
     }
@@ -1034,6 +1036,7 @@ export const CanvasPrimaryView = ({
 
             {/* Render tentacle nodes (with arms) first */}
             {tentacleNodes.map((node) => {
+              const connectedTargets = new Set<string>();
               const connected = edges
                 .filter((e) => e.source === node.id)
                 .map((e) => nodesById.get(e.target))
@@ -1046,6 +1049,8 @@ export const CanvasPrimaryView = ({
                     (n.agentState === "idle" || n.hasUserPrompt === false)
                   )
                     return false;
+                  if (connectedTargets.has(n.id)) return false;
+                  connectedTargets.add(n.id);
                   return true;
                 });
 
@@ -1080,7 +1085,7 @@ export const CanvasPrimaryView = ({
           </g>
         </svg>
 
-        {/* Canvas toolbar — top-left action buttons */}
+        {/* Canvas toolbar ÔÇö top-left action buttons */}
         <div className="canvas-toolbar" role="toolbar" aria-label="Canvas actions">
           <button
             type="button"
@@ -1161,12 +1166,12 @@ export const CanvasPrimaryView = ({
           </button>
         </div>
 
-        {/* Waiting notifications — compact bars below the toolbar */}
+        {/* Waiting notifications ÔÇö compact bars below the toolbar */}
         {waitingNodes.length > 0 && (
           <div className="canvas-waiting-list">
             {waitingNodes.map((node) => {
               const nameRaw = node.label;
-              const name = nameRaw.length > 20 ? `${nameRaw.slice(0, 20)}…` : nameRaw;
+              const name = nameRaw.length > 20 ? `${nameRaw.slice(0, 20)}ÔÇª` : nameRaw;
               const prefix =
                 node.agentRuntimeState === "waiting_for_permission"
                   ? `${node.waitingToolName ?? "Permission"}: `
@@ -1402,7 +1407,25 @@ export const CanvasPrimaryView = ({
                   className="canvas-context-menu-item"
                   onClick={() => {
                     setContextMenu(null);
-                    const result = onCreateWorktreeTerminal?.();
+                    const result = onCreateTerminal?.(contextMenu.tentacleId);
+                    if (result && typeof result.then === "function") {
+                      void result.then((agentId) => {
+                        if (agentId) setPendingOpenAgentId(agentId);
+                      });
+                    }
+                  }}
+                >
+                  <span className="canvas-context-menu-icon">
+                    <TerminalIcon size={14} />
+                  </span>
+                  New Terminal
+                </button>
+                <button
+                  type="button"
+                  className="canvas-context-menu-item"
+                  onClick={() => {
+                    setContextMenu(null);
+                    const result = onCreateWorktreeTerminal?.(contextMenu.tentacleId);
                     if (result && typeof result.then === "function") {
                       void result.then((agentId) => {
                         if (agentId) setPendingOpenAgentId(agentId);

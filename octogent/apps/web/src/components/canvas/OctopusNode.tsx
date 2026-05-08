@@ -107,9 +107,9 @@ const buildEdgePath = (
 
   // Curvature — perpendicular offset for quadratic Bézier control point
   // Single edges get a default curve; multi-edges fan out
-  const curvature = edgeCount <= 1 ? 0.3 : (edgeIndex / (edgeCount - 1) - 0.5) * 2;
-  const offsetRatio = 0.25 + edgeCount * 0.05;
-  const baseOffset = Math.max(35, dist * offsetRatio);
+  const curvature = edgeCount <= 1 ? 0 : (edgeIndex / (edgeCount - 1) - 0.5) * 1.0;
+  const offsetRatio = Math.min(0.25, 0.15 + edgeCount * 0.01);
+  const baseOffset = Math.max(25, dist * offsetRatio);
 
   // Perpendicular to source→target direction (unit normal: -dy/dist, dx/dist)
   const offsetX = (-dy / dist) * curvature * baseOffset;
@@ -124,57 +124,50 @@ const GLYPH_SCALE = 4;
 const GLYPH_W = 112;
 const GLYPH_H = 120;
 
-const isEdgeActivityVisible = (target: GraphNode): boolean =>
-  target.type === "active-session" &&
-  target.hasUserPrompt !== false &&
-  target.agentRuntimeState !== undefined &&
-  target.agentRuntimeState !== "idle";
+const isEdgeActivityVisible = (node: GraphNode): boolean =>
+  (node.type === "active-session" || node.type === "tentacle" || node.type === "octoboss") &&
+  node.agentRuntimeState !== undefined &&
+  node.agentRuntimeState !== "idle";
 
 const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) =>
-  [0, 1, 2].flatMap((index) => [
+  [0, 1, 2, 3, 4].flatMap((index) => [
     <circle
       key={`${keyPrefix}-trail-${index}`}
       className="canvas-edge-activity-dot canvas-edge-activity-dot--trail"
-      r={4.6}
+      r={3 + index * 0.5}
       fill={color}
-      opacity={Math.max(0.14, 0.28 - index * 0.04)}
+      opacity={Math.max(0.1, 0.4 - index * 0.05)}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.62}s`}
-        dur="1.9s"
+        begin={`${index * 0.4}s`}
+        dur="1.5s"
         repeatCount="indefinite"
         rotate="auto"
-      />
-      <animate
-        attributeName="r"
-        values="3.8;5.2;3.8"
-        dur="1.9s"
-        begin={`${index * 0.62}s`}
-        repeatCount="indefinite"
       />
     </circle>,
     <circle
       key={`${keyPrefix}-dot-${index}`}
       className="canvas-edge-activity-dot"
-      r={3.2}
-      fill="#fff4cc"
+      r={4}
+      fill="#fff"
       stroke={color}
-      strokeWidth={1.2}
-      opacity={Math.max(0.7, 1 - index * 0.08)}
+      strokeWidth={1.5}
+      opacity={1}
+      style={{ filter: "drop-shadow(0 0 4px " + color + ")" }}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.62}s`}
-        dur="1.9s"
+        begin={`${index * 0.4}s`}
+        dur="1.5s"
         repeatCount="indefinite"
         rotate="auto"
       />
       <animate
         attributeName="r"
-        values="2.8;3.8;2.8"
-        dur="1.9s"
-        begin={`${index * 0.62}s`}
+        values="3;5;3"
+        dur="0.8s"
+        begin={`${index * 0.4}s`}
         repeatCount="indefinite"
       />
     </circle>,
@@ -230,9 +223,17 @@ export const OctopusNode = ({
       <rect x={-glyphW / 2} y={-glyphH / 2} width={glyphW} height={glyphH} fill="transparent" />
 
       {/* Edges — highlight when either endpoint is selected */}
-      {connectedNodes.map((target) => {
+      {connectedNodes.map((target, index) => {
         const active = isSelected || target.id === selectedNodeId;
-        const path = buildEdgePath(0, 0, target.x - node.x, target.y - node.y, target.radius, 0, 1);
+        const path = buildEdgePath(
+          0,
+          0,
+          target.x - node.x,
+          target.y - node.y,
+          target.radius,
+          index,
+          connectedNodes.length,
+        );
         return (
           <g key={target.id}>
             <path

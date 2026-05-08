@@ -96,6 +96,7 @@ export const App = () => {
     setCanvasOpenTentacleIds,
     canvasTerminalsPanelWidth,
     setCanvasTerminalsPanelWidth,
+    preferredAgentProvider,
   } = usePersistedUiState({ columns: terminals });
   const {
     workspaceSetup,
@@ -529,7 +530,7 @@ export const App = () => {
                   body: JSON.stringify({
                     name: "tentacle-planner",
                     workspaceMode: "shared",
-                    agentProvider: "claude-code",
+                    agentProvider: preferredAgentProvider,
                     promptTemplate: "tentacle-planner",
                   }),
                 });
@@ -547,13 +548,13 @@ export const App = () => {
               onCanvasOpenTentacleIdsChange: setCanvasOpenTentacleIds,
               onCanvasTerminalsPanelWidthChange: setCanvasTerminalsPanelWidth,
               onCreateAgent: async (tentacleId) => {
-                return await createTerminal("shared", undefined, tentacleId);
+                return await createTerminal("shared", preferredAgentProvider, tentacleId);
               },
-              onCreateTerminal: async () => {
-                return await createTerminal("shared", undefined, OCTOBOSS_ID);
+              onCreateTerminal: async (parentTentacleId?: string) => {
+                return await createTerminal("shared", preferredAgentProvider, parentTentacleId ?? OCTOBOSS_ID);
               },
-              onCreateWorktreeTerminal: async () => {
-                return await createTerminal("worktree", undefined, OCTOBOSS_ID);
+              onCreateWorktreeTerminal: async (parentTentacleId?: string) => {
+                return await createTerminal("worktree", preferredAgentProvider, parentTentacleId ?? OCTOBOSS_ID);
               },
               onCreateTentacle: async () => {
                 const response = await fetch("/api/deck/tentacles", {
@@ -570,10 +571,15 @@ export const App = () => {
                   {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ workspaceMode }),
+                    body: JSON.stringify({ workspaceMode, agentProvider: preferredAgentProvider }),
                   },
                 );
                 if (!response.ok) return;
+                const data = (await response.json()) as { parentTerminalId?: string };
+                await refreshColumns();
+                if (data.parentTerminalId) {
+                  // The new coordinator terminal will be picked up by the next columns refresh
+                }
               },
               onOctobossAction: async (action) => {
                 const response = await fetch("/api/terminals", {

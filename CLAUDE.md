@@ -1,4 +1,4 @@
-﻿# Tentacles — Plataforma de Agentes de Produtividade
+# Tentacles — Plataforma de Agentes de Produtividade
 
 ## Objetivo
 Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calendar/Sheets, criação de PDFs/PPTX e chatbot Telegram — tudo orquestrado via Claude Code + Octogent dashboard.
@@ -19,15 +19,48 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
-| agent-skills | — | - `.claude/skills/` — comportamento detalhado de cada agente |
-| files-assistant | `mcp_servers/files_mcp/server.py` | Criação de documentos profissionais: PDFs (genérico, cont... |
-| google-assistant | `mcp_servers/google_mcp/server.py` | Integração completa com Gmail, Google Calendar e Google S... |
-| linkedin-poster | `auto_poster.py` | Automação completa de postagem no LinkedIn: busca notícia... |
-| orchestrator | `.claude/skills/proactive-agent.md` | Agente coordenador central do Tentacles. Monitora o canal `... |
-| platform-infra | — | - `start_Tentacles.ps1` — script launcher que sobe todos os... |
-| telegram-bot | `bots/telegram_bot.py` | Interface de usuário via Telegram. Recebe mensagens, dete... |
-| trends-intelligence | `scripts/trends_monitor.py` | Agente monitora RSS feeds e Google News via Terminal. Agora integrado à lógica de Agente (Claude/Gemini/Tentacles). |
-| Tentacles-agent | `scripts/Tentacles_agent.py` | CLI Agente genérico que utiliza o 'Universal Brain' (Groq/OpenRouter) para orquestração. |
+| agent-skills | `mcp_servers/agent-skills/server.py` | Repositório de comportamentos e instruções detalhadas de ... |
+| files-assistant | `mcp_servers/files-assistant/server.py` | Criação de documentos profissionais (PDF e PowerPoint) vi... |
+| google-assistant | `mcp_servers/google-assistant/server.py` | Gerenciamento de Gmail, Google Calendar e Google Sheets v... |
+| linkedin-poster | `mcp_servers/linkedin-poster/server.py` | Automação de postagens no LinkedIn com IA de texto e imagem. |
+| orchestrator | `mcp_servers/orchestrator/server.py` | Coordenador central do ecossistema Tentacles. Monitora ev... |
+| platform-infra | `mcp_servers/platform-infra/server.py` | Infraestrutura de inicialização e monitoramento de serviços. |
+| telegram-bot | `mcp_servers/telegram-bot/server.py` | Interface de comando via Telegram com detecção de intenção. |
+| trends-intelligence | `mcp_servers/trends-intelligence/server.py` | Monitoramento contínuo de tendências e notícias via RSS/G... |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -123,26 +156,14 @@ Tentacles/
 ## Comandos de Execução
 
 ```powershell
-# Instalar todas as dependências (recomendado para novas máquinas)
-pip install -r requirements.txt
+# Setup profissional (Python + Node + CLI Link)
+./setup.ps1
 
-# LinkedIn auto-poster (produção, 2h)
-python auto_poster.py
-
-# Telegram Bot (token já hardcoded, apenas rodar)
-python bots/telegram_bot.py
-
-# Dashboard Octogent (deve estar rodando para o bot usar o Dashboard)
-octogent
-
-# Setup Google OAuth2 (1 vez)
-python mcp_servers/google_mcp/auth.py
+# Iniciar plataforma completa
+./start_tentacles.ps1
 
 # Criar novo tentáculo
 python scripts/new_tentacle.py <nome> "<descricao>" [--mcp] [--color "#RRGGBB"]
-
-# Teste LinkedIn sem publicar
-python test_groq.py
 ```
 
 ## Arquitetura do Dashboard Bridge (Telegram → Octogent)
@@ -159,6 +180,24 @@ Quando o usuário pede um PDF ou PPTX no Telegram:
 
 **Correção crítica Octogent:** `INITIAL_PROMPT_DELAY_MS` aumentado de 4s→12s no arquivo `dist/api/createApiServer-*.js` dentro da pasta do Octogent.
 Se o Octogent for reinstalado/atualizado, essa edição se perde — reaplicar.
+
+## Arquitetura do Gráfico de Orquestração (Hierarquia)
+
+O Dashboard utiliza um sistema de grafos dinâmicos para visualizar a relação entre agentes:
+
+1.  **Lógica de Hierarquia:** Localizada em `octogent/apps/web/src/app/hooks/useCanvasGraphData.ts`. 
+    -   Utiliza o `parentTerminalId` dos terminais para deduzir a paternidade entre tentáculos.
+    -   Se um tentáculo B possui um terminal cujo pai está no tentáculo A, o gráfico desenha uma linha de A para B.
+    -   Caso contrário, o tentáculo é conectado ao `Octoboss` (nó central).
+
+2.  **Visualização de Linhas (Edges):**
+    -   **Curvatura (Bézier):** Definida em `octogent/apps/web/src/components/canvas/OctopusNode.tsx` via função `buildEdgePath`. Utiliza curvas quadráticas para um visual orgânico.
+    -   **Filtro de Duplicidade:** Implementado em `CanvasPrimaryView.tsx` usando um mapa `uniqueEdges` para evitar múltiplas linhas entre os mesmos dois nós.
+
+3.  **Animações e Cores:**
+    -   **Atividade:** Pequenos pontos coloridos que percorrem as linhas usando SVG `animateMotion`.
+    -   **Cores:** Os tentáculos herdam cores definidas no Deck ou geradas aleatoriamente via `hashString(tentacleId)`.
+    -   **Status:** As bordas e expressões dos polvos mudam conforme o `AgentState` (idle, active, blocked).
 
 ## Estado Atual (06/05/2026)
 - ✅ LinkedIn auto-poster funcionando (Groq AI, 2h intervalo)

@@ -24,15 +24,25 @@ PYTHON_EXE = (
     "C:\\Users\\t034183\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe"
 )
 
-# Localização global do deck.json (UUID fixo do projeto Clilink)
-DECK_JSON = (
-    Path.home()
-    / ".octogent"
-    / "projects"
-    / "6db28e03-c46a-44da-8f55-7236cda76706"
-    / "state"
-    / "deck.json"
-)
+# Localização do deck.json (Detecta local ou global)
+def get_deck_json():
+    # 1. Prioridade: Local no Workspace
+    local_deck = ROOT / ".octogent" / "state" / "deck.json"
+    if local_deck.exists():
+        return local_deck
+    
+    # 2. Fallback: Global (UUID fixo do projeto)
+    global_deck = (
+        Path.home()
+        / ".octogent"
+        / "projects"
+        / "6db28e03-c46a-44da-8f55-7236cda76706"
+        / "state"
+        / "deck.json"
+    )
+    return global_deck
+
+DECK_JSON = get_deck_json()
 
 # Paleta de cores padrão em rotação para novos tentáculos
 _DEFAULT_COLORS = [
@@ -57,7 +67,7 @@ def _context_md(name: str, description: str, has_mcp: bool) -> str:
 ## Ferramentas MCP disponíveis
 - `{name}_action(param)` — ação principal (personalizar)
 """
-    return f"""# {name.replace("-", " ").title()} — CONTEXT
+    return f"""# {name.replace("-", " ").title()}
 
 ## Scope
 {description}
@@ -177,6 +187,7 @@ def _add_to_deck(name: str, color: str, paths: list):
             "hairColor": color,
         },
         "scope": {"paths": paths, "tags": []},
+        "label": name.replace("-", " ").title()
     }
     DECK_JSON.write_text(json.dumps(deck, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"  [OK] Card visual adicionado ao Octogent Deck ({color})")

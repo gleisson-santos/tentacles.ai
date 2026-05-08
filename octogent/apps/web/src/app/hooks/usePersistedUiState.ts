@@ -9,7 +9,7 @@ import {
   type TerminalCompletionSoundId,
 } from "../notificationSounds";
 import { retainActiveTerminalEntries, retainActiveTerminalIds } from "../terminalState";
-import type { FrontendUiStateSnapshot, TerminalView } from "../types";
+import type { FrontendUiStateSnapshot, TerminalAgentProvider, TerminalView } from "../types";
 import { clampSidebarWidth, normalizeFrontendUiStateSnapshot } from "../uiStateNormalizers";
 
 type UsePersistedUiStateOptions = {
@@ -30,6 +30,7 @@ const DEFAULT_MINIMIZED_TERMINAL_IDS: string[] = [];
 const DEFAULT_TERMINAL_WIDTHS: Record<string, number> = {};
 const DEFAULT_CANVAS_OPEN_TERMINAL_IDS: string[] = [];
 const DEFAULT_CANVAS_OPEN_TENTACLE_IDS: string[] = [];
+const DEFAULT_PREFERRED_AGENT_PROVIDER: TerminalAgentProvider = "claude-code";
 
 const areStringArraysEqual = (left: string[] | undefined, right: string[] | undefined) => {
   if (left === right) {
@@ -80,6 +81,7 @@ const buildPersistedUiStateSnapshot = ({
   canvasOpenTerminalIds,
   canvasOpenTentacleIds,
   canvasTerminalsPanelWidth,
+  preferredAgentProvider,
 }: {
   activePrimaryNav: PrimaryNavIndex;
   isAgentsSidebarVisible: boolean;
@@ -98,6 +100,7 @@ const buildPersistedUiStateSnapshot = ({
   canvasOpenTerminalIds: string[];
   canvasOpenTentacleIds: string[];
   canvasTerminalsPanelWidth: number | null;
+  preferredAgentProvider: TerminalAgentProvider;
 }): FrontendUiStateSnapshot => ({
   activePrimaryNav,
   isAgentsSidebarVisible,
@@ -115,6 +118,7 @@ const buildPersistedUiStateSnapshot = ({
   terminalWidths,
   canvasOpenTerminalIds,
   canvasOpenTentacleIds,
+  preferredAgentProvider,
   ...(canvasTerminalsPanelWidth != null ? { canvasTerminalsPanelWidth } : {}),
 });
 
@@ -139,7 +143,8 @@ const areUiStateSnapshotsEqual = (
   areNumberRecordMapsEqual(left.terminalWidths, right.terminalWidths) &&
   areStringArraysEqual(left.canvasOpenTerminalIds, right.canvasOpenTerminalIds) &&
   areStringArraysEqual(left.canvasOpenTentacleIds, right.canvasOpenTentacleIds) &&
-  left.canvasTerminalsPanelWidth === right.canvasTerminalsPanelWidth;
+  left.canvasTerminalsPanelWidth === right.canvasTerminalsPanelWidth &&
+  left.preferredAgentProvider === right.preferredAgentProvider;
 
 type UsePersistedUiStateResult = {
   activePrimaryNav: PrimaryNavIndex;
@@ -179,6 +184,8 @@ type UsePersistedUiStateResult = {
   setCanvasOpenTentacleIds: Dispatch<SetStateAction<string[]>>;
   canvasTerminalsPanelWidth: number | null;
   setCanvasTerminalsPanelWidth: Dispatch<SetStateAction<number | null>>;
+  preferredAgentProvider: TerminalAgentProvider;
+  setPreferredAgentProvider: Dispatch<SetStateAction<TerminalAgentProvider>>;
   readUiState: (signal?: AbortSignal) => Promise<FrontendUiStateSnapshot | null>;
   applyHydratedUiState: (
     snapshot: FrontendUiStateSnapshot | null,
@@ -231,6 +238,9 @@ export const usePersistedUiState = ({
     DEFAULT_CANVAS_OPEN_TENTACLE_IDS,
   );
   const [canvasTerminalsPanelWidth, setCanvasTerminalsPanelWidth] = useState<number | null>(null);
+  const [preferredAgentProvider, setPreferredAgentProvider] = useState<TerminalAgentProvider>(
+    DEFAULT_PREFERRED_AGENT_PROVIDER,
+  );
   const lastPersistedUiStateRef = useRef<FrontendUiStateSnapshot | null>(null);
 
   const readUiState = useCallback(async (signal?: AbortSignal) => {
@@ -286,6 +296,7 @@ export const usePersistedUiState = ({
           canvasOpenTerminalIds: DEFAULT_CANVAS_OPEN_TERMINAL_IDS,
           canvasOpenTentacleIds: DEFAULT_CANVAS_OPEN_TENTACLE_IDS,
           canvasTerminalsPanelWidth: null,
+          preferredAgentProvider: DEFAULT_PREFERRED_AGENT_PROVIDER,
         });
         return;
       }
@@ -333,6 +344,7 @@ export const usePersistedUiState = ({
         canvasOpenTerminalIds: nextCanvasOpenTerminalIds,
         canvasOpenTentacleIds: nextCanvasOpenTentacleIds,
         canvasTerminalsPanelWidth: snapshot.canvasTerminalsPanelWidth ?? null,
+        preferredAgentProvider: snapshot.preferredAgentProvider ?? DEFAULT_PREFERRED_AGENT_PROVIDER,
       });
 
       if (
@@ -406,6 +418,10 @@ export const usePersistedUiState = ({
       if (snapshot.canvasTerminalsPanelWidth !== undefined) {
         setCanvasTerminalsPanelWidth(snapshot.canvasTerminalsPanelWidth);
       }
+
+      if (snapshot.preferredAgentProvider !== undefined) {
+        setPreferredAgentProvider(snapshot.preferredAgentProvider);
+      }
     },
     [],
   );
@@ -442,6 +458,7 @@ export const usePersistedUiState = ({
       canvasOpenTerminalIds,
       canvasOpenTentacleIds,
       canvasTerminalsPanelWidth,
+      preferredAgentProvider,
     });
 
     if (areUiStateSnapshotsEqual(lastPersistedUiStateRef.current, payload)) {
@@ -490,6 +507,7 @@ export const usePersistedUiState = ({
     sidebarWidth,
     terminalCompletionSound,
     terminalWidths,
+    preferredAgentProvider,
   ]);
 
   return {
@@ -530,6 +548,8 @@ export const usePersistedUiState = ({
     setCanvasOpenTentacleIds,
     canvasTerminalsPanelWidth,
     setCanvasTerminalsPanelWidth,
+    preferredAgentProvider,
+    setPreferredAgentProvider,
     readUiState,
     applyHydratedUiState,
   };
