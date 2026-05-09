@@ -1,7 +1,7 @@
 # Skill: Platform Infra
 
 ## Papel
-Infraestrutura e launcher do sistema
+Infraestrutura de inicialização e monitoramento de serviços.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a platform infra

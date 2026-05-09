@@ -1,18 +1,48 @@
 {
-    "last_update": "2026-05-07T16:40:51.672351",
+    "last_update": "2026-05-09T09:50:28.772399",
     "search_terms": [
-        "Make automação",
-        "geminicli",
-        "Claude code CLI"
+        "A casa dos dragões"
     ],
     "google_news": [
         {
-            "title": "Anthropic vaza 512.000 linhas de código-fonte do Claude Code CLI - games.gg",
-            "link": "https://news.google.com/rss/articles/CBMijwFBVV95cUxOMjhyVzNuTXJ4dHpjU250ekFlLXhjeHZYRU5XaDNBMC1pbHBRNG9DQ29HTUVmUXFXN0ZmSzMtTENRSWQtbXB2dkFhNGVkV1BrZy1hRldaT0F5MGctaklvQVlUWUpPMFVZMXVxQUdOQTlJODdHQ1d1UUdxUjRCaUctcVpILUZtWngyRjJkaDZiQQ?oc=5",
-            "published": "Fri, 03 Apr 2026 07:00:00 GMT",
-            "analysis_time": "07/05/2026 16:40",
+            "title": "Como termina A Casa dos Dragões nos livros? Veja final e quem morre - TecMundo",
+            "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPSWdkb1VhNHdlLWFhQzVyUWZ1eGpEcUZUWTZSdjdhYmZsR2wxdkJWX3dFWm5CWWVoaXM5aDJGc0lNVDI3X21TQllXU1pVRFVhb0h6UDJ3Y3dobG1rR3JfLUJyYnlqYVdkazNkTGg3VEx1bFkzLThISFBxdE8xWG5fNDIzRWVJMElyRF9MZm8wekkwT0pib1NUM29KWQ?oc=5",
+            "published": "Sun, 04 Aug 2024 07:00:00 GMT",
+            "analysis_time": "09/05/2026 09:50",
             "source": "Google News",
-            "summary": "**Vazamento de Código-Fonte: Um Marco na História da Inteligência Artificial**\nA notícia recente sobre o vazamento de 512.000 linhas de código-fonte do Claude Code CLI, uma ferramenta de inteligência artificial desenvolvida pela Anthropic, está gerando grande interesse no mundo da tecnologia. Esse evento marca um divisor de águas na história da inteligência artificial, pois permite que desenvolvedores e pesquisadores tenham acesso a um código-fonte de alta qualidade e complexidade, o que pode acelerar o desenvolvimento de novas aplicações e técnicas em IA. Com isso, a comunidade de desenvolvedores pode explorar e aprender com o código, o que pode levar a avanços significativos na área.\n\n**Impacto Tecnológico e Tendências de Mercado**\nO vazamento do código-fonte do Claude Code CLI pode ter um impacto significativo no mercado de inteligência artificial, pois pode permitir que outras empresas e desenvolvedores criem soluções semelhantes ou melhoradas. Isso pode levar a uma maior competição no mercado, o que pode resultar em preços mais baixos e soluções mais inovadoras para os consumidores. Além disso, o acesso a esse código-fonte pode acelerar a adoção de tecnologias de IA em diversas indústrias, como saúde, finanças e educação, o que pode ter um impacto positivo na sociedade como um todo. No entanto, também é importante considerar os riscos de segurança e privacidade que podem estar associados ao vazamento de código-fonte de IA.\n\n**Futuro da Inteligência Artificial**\nO vazamento do código-fonte do Claude Code CLI é um lembrete de que a inteligência artificial está em constante evolu"
+            "summary": "Resumo temporariamente indisponível. (Erro: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01jr61e6e9ewzr8tsbbfd7amp9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99595, Requested 507. Please try again in 1m28.128s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}})"
+        },
+        {
+            "title": "O dia tão aguardado está chegando, A Casa do Dragão estará entre nós! - UOL",
+            "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQRmNoN1BhWmZxS3FfX3AwYU5mdUhmTmM3ejdjeDhka2k4aWo4YVVxVXpoV1ZzT0NQNnl2dVdBRDVYUDlyenlJWGVnNW9qSW1MQlJBQlZuUl9fVzBsZzU4RG1zU3RtSFZKVEZDd0lXYUFZcEZEMS0zbldLTWJKRTdXUXZHVmVva2lIRk1GWUhNTXdNUWJjTE5pMmg5aUZ5VnBBNGtJc1lMOXdQaVdXcURsR3pzR3prdzNGM2VIcDJ2eGdOT3NXaWc?oc=5",
+            "published": "Fri, 19 Aug 2022 07:00:00 GMT",
+            "analysis_time": "09/05/2026 09:50",
+            "source": "Google News",
+            "summary": "Resumo temporariamente indisponível. (Erro: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01jr61e6e9ewzr8tsbbfd7amp9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99593, Requested 507. Please try again in 1m26.4s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}})"
+        },
+        {
+            "title": "A Casa do Dragão: HBO Max libera vídeo especial com cenas inéditas - Metrópoles",
+            "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOZXdsX1dZeVdhZ2ZZNUhxWFpqclJGalhkUlJLNzJKS0UxU2hhMnN3WjZGUWZ6RFlHSnpkc0IyUmdlV0hiRENhNXp4UF9kbXh4dEMzeWY5SXFMcU5BN2pzVURvME5tZUw4ZXl4bGhBYWxfRGEyelV3c2REQ19KZk5GZG8tV2ZWQ2FMYzZvSHZHUW1aYlhtaDgzNEplUnNJb3JmZzQ0UFhvUWpGR0U4TjFGa0JScDJERHNz?oc=5",
+            "published": "Thu, 18 Aug 2022 07:00:00 GMT",
+            "analysis_time": "09/05/2026 09:50",
+            "source": "Google News",
+            "summary": "Resumo temporariamente indisponível. (Erro: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01jr61e6e9ewzr8tsbbfd7amp9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99592, Requested 507. Please try again in 1m25.536s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}})"
+        },
+        {
+            "title": "Cena brutal de parto no primeiro episódio de 'A Casa do Dragão' choca e é comparada a momento polêmico de 'Game of Thrones' - revistamonet.globo.com",
+            "link": "https://news.google.com/rss/articles/CBMigAJBVV95cUxObF93TE05NlZaUi05STJEQ0p4OGV6RjdtYnZaOGJOWXpfV0Zmd0ZvNFRXWXFYaktjS0l1NlZ0WEJmVWQ2ck44djJkRTFWS0VybnJRY2dGel9rYnFacFpydFp1ZXNtLW1nRi1QRUtMOUVIRlZ6ZHBwbE5ybm8xMVZkNjdDUEFsLWl2VnBFaWUyUVBBRnBNZlFCTUk3aGhXNHA1RGFIbXlLSEhxVENLdXU1eExueS04OG5TajdYN0tvTkNGY3lBY1A3WjhjdjlLWTNoSDlUWVM4aXE3Qy01RUU5bXdRSUdNUTg0MzNnZkhDZHBYMDM3Ykg5Z05NRElKOW4x0gGGAkFVX3lxTFByM2p4Nk95RUg5d0x6d2tGVmJiTUYwNVBaWGR5ZWduTUlJWFZZNXNQTEU4ZThsSmh4bGxvM0xURjhWcXB4eHNDaG5tMmx6OEs5N0pTUDNyT1ZEdGdXS1VqalR4OEdrOVJXRFZ4dzAwMVNSYlA2cWNyTFVjb29sZnJOcUtrWTBIR0VuYnNienRWV1liUEpYcjRDYV9PMzhZMkVpN3AtS1lXY2NaS3U0SVVpMWU3M042dFg4bjAzTC1pRUlyVE5yWlVaZWljc0ZOX1pVVWFjV29QSDNHSlJrWlkwTkcwcG9fanZTVlFoRXNSemFpNzVBX1ZKZ3ZnOUQwT3RCVGI5VGc?oc=5",
+            "published": "Mon, 22 Aug 2022 07:00:00 GMT",
+            "analysis_time": "09/05/2026 09:50",
+            "source": "Google News",
+            "summary": "Resumo temporariamente indisponível. (Erro: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01jr61e6e9ewzr8tsbbfd7amp9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99590, Requested 529. Please try again in 1m42.816s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}})"
+        },
+        {
+            "title": "House of the Dragon: quando termina a 2ª temporada? - Olhar Digital",
+            "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNSFRWck14Y1U5ZksyV25PcHRBRHpOd2ptYUItYmlBLWhPdTZnbWhWQnQxRlNUdjAxSjZBang4aElmcVVUYTY2Tm5lUnIzYmc5NnVYbnl2VUdmNllKNi0xTXdjNVpHUzJkYTBQNnZ1WGs0Q3VBaVdNWDlfQ2pzZWN5d0FYMUt3VkI4dGJ0UlNfZGFwRmVUQnloY1d1NDZBcVNleVU3b2dzS211eGJX?oc=5",
+            "published": "Mon, 22 Jul 2024 07:00:00 GMT",
+            "analysis_time": "09/05/2026 09:50",
+            "source": "Google News",
+            "summary": "Resumo temporariamente indisponível. (Erro: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01jr61e6e9ewzr8tsbbfd7amp9` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99589, Requested 502. Please try again in 1m18.624s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}})"
         }
     ]
 }

@@ -1,7 +1,7 @@
 # Skill: Orchestrator
 
 ## Papel
-Coordenador central do sistema
+Coordenador central do ecossistema Tentacles. Monitora eventos e delega tarefas.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a orchestrator

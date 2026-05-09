@@ -404,6 +404,7 @@ const terminalCreate = async () => {
   const autoRenamePromptContext = parseFlag("--auto-rename-prompt-context");
   const promptTemplate = parseFlag("--prompt-template");
   const promptVariables = parseJsonFlag("--prompt-variables");
+  const agentProvider = parseFlag("--agent-provider");
   const apiBase = resolveRuntimeApiBase();
 
   const body: Record<string, unknown> = {};
@@ -418,6 +419,7 @@ const terminalCreate = async () => {
   if (autoRenamePromptContext) body.autoRenamePromptContext = autoRenamePromptContext;
   if (promptTemplate) body.promptTemplate = promptTemplate;
   if (promptVariables) body.promptVariables = promptVariables;
+  if (agentProvider) body.agentProvider = agentProvider;
 
   try {
     const response = await fetch(`${apiBase}/api/terminals`, {
@@ -686,6 +688,7 @@ const main = async () => {
     --parent-terminal-id               Parent terminal ID for child terminals
     --prompt-template                  Prompt template name
     --prompt-variables                 JSON object of prompt template variables
+    --agent-provider                   Terminal Agent Provider (e.g. gemini-cli)
   octogent terminal list               List terminal lifecycle state
   octogent terminal stop <id>          Stop a terminal session
   octogent terminal kill <id>          Kill a terminal session or recorded process

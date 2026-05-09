@@ -97,6 +97,7 @@ export const App = () => {
     canvasTerminalsPanelWidth,
     setCanvasTerminalsPanelWidth,
     preferredAgentProvider,
+    setPreferredAgentProvider,
   } = usePersistedUiState({ columns: terminals });
   const {
     workspaceSetup,
@@ -509,6 +510,8 @@ export const App = () => {
               onPreviewTerminalCompletionSound: playCompletionSoundPreview,
               onTerminalCompletionSoundChange: setTerminalCompletionSound,
               terminalCompletionSound,
+              preferredAgentProvider,
+              onPreferredAgentProviderChange: setPreferredAgentProvider,
             }}
             canvasPrimaryViewProps={{
               columns: terminals,

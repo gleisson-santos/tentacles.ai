@@ -1,7 +1,7 @@
 # Skill: Agent Skills
 
 ## Papel
-Habilidades e comportamentos dos agentes
+Repositório de comportamentos e instruções detalhadas de cada agente.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a agent skills

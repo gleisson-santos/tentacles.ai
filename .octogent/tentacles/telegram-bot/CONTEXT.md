@@ -1,53 +1,50 @@
 # Telegram Bot
 
 ## Scope
-Interface de usuário via Telegram. Recebe mensagens, detecta intenção com Groq AI e executa ações reais nos outros agentes (Gmail, Calendar, Sheets, PDF, PPTX, LinkedIn). Envia eventos para o canal Octogent `clilink-events`.
+Interface de comando via Telegram com detecção de intenção. Atua como o ponto de entrada principal para o usuário final, orquestrando execuções locais ou via Dashboard.
+
+## Responsabilidades
+- **Interface Homem-Máquina:** Gerenciar a comunicação bidirecional com o usuário.
+- **Detecção de Intenção:** Processar mensagens naturais para identificar ações (Gmail, Calendar, PDFs, etc).
+- **Orquestração de Tarefas:** Decidir entre execução local síncrona ou delegação para agentes especializados via Octogent Dashboard.
+- **Monitoramento de Status:** Acompanhar a conclusão de tarefas assíncronas e entregar resultados (arquivos, confirmações).
+- **Gestão de Configuração:** Prover comandos para ajustar o provedor e modelo de IA global (/brain).
+
+## Comandos Disponíveis
+- `/start` — Menu inicial e boas-vindas.
+- `/gmail` — Listagem de e-mails recentes.
+- `/agenda` — Compromissos de hoje no Google Calendar.
+- `/planilhas` — Listagem de planilhas no Google Sheets.
+- `/linkedin` — Menu para criação de posts ou análise de tendências.
+- `/pdf` — Gatilho para criação de documento PDF (via Dashboard).
+- `/pptx` — Gatilho para criação de apresentação PowerPoint (via Dashboard).
+- `/brain` — Configuração do cérebro universal (OpenRouter/Groq/Gemini).
+
+## Ferramentas (Agente)
+- **Telegram SDK:** `python-telegram-bot` para interface de chat e envio de documentos.
+- **OpenRouter/Groq:** Motor de inferência para detecção de intenção.
+- **LLM Bridge:** `mcp_servers/llm_bridge/server.py` para gestão centralizada de modelos.
+- **Octogent API Bridge:** Criação de terminais dinâmicos via `http://127.0.0.1:8787/api/terminals`.
+- **Google Workspace SDKs:** Acesso via `gmail_tools`, `calendar_tools` e `sheets_tools`.
+- **Document Tools:** Fallback local com `pdf_tools` e `pptx_tools`.
 
 ## Key Files
-- `bots/telegram_bot.py` — bot principal
-- `logs/logger.py` — log local + bridge Octogent
-
-## Configuração
-- Token: variável `TELEGRAM_BOT_TOKEN` (default hardcoded)
-- User ID autorizado: `205798346` (único usuário permitido)
-- Groq Model: `llama-3.3-70b-versatile`
-- Canal Octogent: `clilink-events`
-
-## Fluxo de uma mensagem
-```
-Usuário → Telegram
-    → detect_intent() via Groq (JSON com intent + params)
-    → roteamento por intent:
-        gmail_list/summarize  → gmail_tools.list_emails()
-        calendar_today/list   → calendar_tools.get_today_schedule()
-        calendar_create       → calendar_tools.create_event()
-        sheets_list           → sheets_tools.list_spreadsheets()
-        pdf_create            → pdf_tools.create_pdf() + envia arquivo
-        pptx_create           → pptx_tools.create_presentation() + envia arquivo
-        linkedin_post         → Groq gera texto do post
-        general               → Groq responde diretamente
-    → log_octogent() → canal clilink-events
-    → resposta ao usuário
-```
-
-## Comandos disponíveis
-- `/start` — menu principal
-- `/gmail` — lista 10 emails recentes
-- `/agenda` — agenda de hoje
-- `/planilhas` — lista planilhas do Drive
-- `/linkedin` — inicia fluxo de criação de post
-- `/pdf` — inicia criação de PDF (pergunta o assunto)
-- `/pptx` — inicia criação de apresentação (pergunta o assunto)
+- `bots/telegram_bot.py` — Código principal do bot, handlers e lógica de bridge.
+- `logs/logger.py` — Sistema de log centralizado (log e log_octogent).
+- `mcp_servers/llm_bridge/server.py` — Gestão de modelos de IA e chaves de API.
+- `outputs/.status/` — Pasta onde são monitorados arquivos `.done` para retorno de tarefas do Dashboard.
 
 ## Key Decisions
-- Intenção detectada por Groq (não por keywords simples) para suportar linguagem natural
-- Arquivos PDF/PPTX enviados diretamente no chat via `reply_document`
-- Contexto de múltiplos turnos via `context.user_data["pending"]` para /pdf e /pptx
-- Markdown habilitado nas respostas
-- Mensagens >4000 chars divididas automaticamente
+- **Híbrido de Execução:** Consultas rápidas (Gmail/Calendar) são feitas localmente. Tarefas longas ou complexas (PDF, PPTX, análise de tendências) são delegadas ao Dashboard para evitar travamento do bot (polling).
+- **Dashboard Bridge:** O bot cria um terminal no Dashboard com um prompt específico e monitora a criação de um arquivo `{terminal_id}.done` em `outputs/.status/` para saber quando a tarefa terminou.
+- **Segurança:** Bloqueio por ID de usuário fixo (`ALLOWED_USER_ID`) definido no `.env`.
+
+## Conventions
+- Usar `log_octogent` para eventos visíveis no Dashboard.
+- Todas as mensagens de resposta devem ser em Português (Brasil).
 
 ## Related Tentacles
-- `google-assistant` — chama gmail_tools, calendar_tools, sheets_tools diretamente
-- `files-assistant` — chama pdf_tools, pptx_tools diretamente
-- `linkedin-poster` — gera posts via Groq (sem publicar automaticamente)
-- `orchestrator` — recebe resumo das ações via canal clilink-events
+- `orchestrator` — Coordenador principal.
+- `files-assistant` — Delegado via Dashboard para criação de documentos complexos.
+- `linkedin-poster` — Delegado via Dashboard para análise de tendências e postagens automáticas.
+

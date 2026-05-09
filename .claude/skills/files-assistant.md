@@ -1,11 +1,14 @@
 # Skill: Files Assistant
 
 ## Papel
-Gerador de PDFs e PowerPoint
+Criação de documentos profissionais (PDF e PowerPoint) via MCP.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a files assistant
 - Delegado pelo orchestrator
+
+## Ferramentas disponíveis
+- `files-assistant_action(param)` — ação principal (personalizar em `mcp_servers/files-assistant/server.py`)
 
 ## Comportamento
 1. Leia `.octogent/tentacles/files-assistant/CONTEXT.md` para contexto completo

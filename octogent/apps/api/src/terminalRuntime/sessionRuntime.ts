@@ -1,4 +1,4 @@
-import { type WriteStream, createWriteStream, existsSync, mkdirSync } from "node:fs";
+import { type WriteStream, createWriteStream, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import type { IncomingMessage } from "node:http";
 import { join } from "node:path";
 import type { Duplex } from "node:stream";
@@ -474,8 +474,24 @@ export const createSessionRuntime = ({
     const terminal = terminals.get(session.terminalId);
     const provider = terminal?.agentProvider ?? DEFAULT_AGENT_PROVIDER;
 
-    const bootstrapCommand =
+    let bootstrapCommand =
       TERMINAL_BOOTSTRAP_COMMANDS[provider] ?? TERMINAL_BOOTSTRAP_COMMANDS[DEFAULT_AGENT_PROVIDER];
+
+    if (provider === "gemini-cli" && session.initialPrompt) {
+      const stateDir = join(getTentacleWorkspaceCwd(session.tentacleId), ".octogent", "state");
+      if (!existsSync(stateDir)) {
+        mkdirSync(stateDir, { recursive: true });
+      }
+      const promptFile = join(stateDir, `prompt-${sessionId}.md`);
+      writeFileSync(promptFile, session.initialPrompt, "utf8");
+      
+      const escapedPath = process.platform === "win32" ? promptFile.replace(/\\/g, "/") : promptFile;
+      bootstrapCommand = `${bootstrapCommand} -i "Read this file and IMMEDIATELY execute the bash commands inside it using your Shell tool. Do NOT just summarize it. Execute the instructions: @${escapedPath}"`;
+      
+      // Clear the prompt so the generic pasting logic doesn't fire
+      session.initialPrompt = undefined;
+    }
+
     appendDebugLog(session, `bootstrap session=${sessionId} command=${bootstrapCommand}`);
     session.pty.write(`${bootstrapCommand}\r`);
 

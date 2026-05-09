@@ -1,7 +1,7 @@
 # Skill: Linkedin Poster
 
 ## Papel
-Postagem automática no LinkedIn
+Automação de postagens no LinkedIn com IA de texto e imagem.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a linkedin poster

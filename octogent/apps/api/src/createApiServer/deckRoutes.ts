@@ -823,6 +823,9 @@ export const handleDeckTentacleSwarmRoute: ApiRouteHandler = async (
             "--prompt-template swarm-worker",
             `--prompt-variables ${shellSingleQuote(promptVariables)}`,
           ];
+          if (agentProviderResult.agentProvider) {
+            commandParts.push(`--agent-provider ${shellSingleQuote(agentProviderResult.agentProvider)}`);
+          }
           if (workerWorkspaceMode === "worktree") {
             commandParts.splice(3, 0, `--worktree-id ${shellSingleQuote(workerTerminalId)}`);
           }
