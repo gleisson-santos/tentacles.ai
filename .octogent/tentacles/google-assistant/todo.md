@@ -8,3 +8,5 @@
 ## Concluído
 - [x] Tentáculo criado via new_tentacle.py
 - [x] Skill skeleton criada em .claude/skills/google-assistant.md
+- [ ] Enviar email para Gleisson jsgleisson@gmail.com confirmando o almoço
+- [ ] Enviar email para Caio glfx20@gmail.com falando sobre a divida dele
