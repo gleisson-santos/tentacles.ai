@@ -1,12 +1,11 @@
-﻿import asyncio
+import asyncio
 import json
 import logging
 import os
 import re
 import sys
 import time as _time
-import urllib.request
-import urllib.error
+import httpx
 from datetime import datetime, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -15,7 +14,7 @@ load_dotenv()
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from groq import Groq
+
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -26,11 +25,10 @@ from logs.logger import log, log_octogent
 
 # ── Configuração ───────────────────────────────────────────────────────────────
 TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN")
-GROQ_API_KEY    = os.getenv("GROQ_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 ALLOWED_USER_ID = int(os.getenv("ALLOWED_USER_ID", "0"))
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
-groq_client = Groq(api_key=GROQ_API_KEY)
 
 # ── Dashboard bridge ───────────────────────────────────────────────────────────
 
@@ -46,23 +44,51 @@ def _parse_json(text: str) -> any:
     text = re.sub(r"```json\s*|\s*```", "", text).strip()
     return json.loads(text)
 
-def _groq(messages: list, temperature: float = 0.3, max_tokens: int = 1024) -> str:
+async def _groq(messages: list, temperature: float = 0.3, max_tokens: int = 1024) -> str:
     try:
-        resp = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        return resp.choices[0].message.content
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "HTTP-Referer": "http://localhost:8787",
+                    "X-Title": "Tentacles Bot",
+                },
+                json={
+                    "model": "x-ai/grok-4.1-fast",
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                },
+                timeout=60.0
+            )
+            data = resp.json()
+            if "choices" in data and len(data["choices"]) > 0:
+                return data["choices"][0]["message"]["content"]
+            else:
+                return f"Erro na resposta OpenRouter: {data}"
     except Exception as e:
-        return f"Erro Groq: {e}"
+        return f"Erro OpenRouter: {e}"
 
-def _detect_intent(text: str) -> dict:
+async def _universal_query(prompt: str, system_prompt: str = None) -> str:
+    """Usa o llm_bridge para consultas, respeitando a config global."""
+    try:
+        # Chama a ferramenta de forma síncrona via thread para não travar o loop
+        return await asyncio.to_thread(llm_bridge.query_llm, prompt, system_prompt)
+    except Exception as e:
+        log("telegram", "erro_universal_query", str(e))
+        # Fallback para Groq direto se o bridge falhar
+        return await _groq([
+            {"role": "system", "content": system_prompt or ""},
+            {"role": "user", "content": prompt}
+        ])
+
+async def _detect_intent(text: str) -> dict:
     prompt = f"""
     Analise a intenção do usuário abaixo e retorne um JSON com 'intent' e 'params'.
     Intenções possíveis:
     - gmail_list: listar emails recentes
+    - gmail_send: enviar um email (precisa de to, subject, body)
     - gmail_summarize: resumir caixa de entrada
     - calendar_today: agenda de hoje
     - calendar_list: listar próximos eventos
@@ -77,7 +103,7 @@ def _detect_intent(text: str) -> dict:
     FORMATO: {{"intent": "...", "params": {{...}}}}
     USUÁRIO: {text}
     """
-    raw = _groq([{"role": "user", "content": prompt}], temperature=0.1)
+    raw = await _universal_query(prompt, "Você é um classificador de intenções preciso que retorna apenas JSON.")
     try:
         return _parse_json(raw)
     except:
@@ -85,46 +111,95 @@ def _detect_intent(text: str) -> dict:
 
 # ── Handlers de Negócio ────────────────────────────────────────────────────────
 
-def _handle_gmail_list() -> str:
-    messages = gmail_tools.list_messages(max_results=5)
+async def _handle_gmail_list() -> str:
+    messages = await asyncio.to_thread(gmail_tools.list_emails, max_results=5)
     if not messages:
         return "📭 Nenhum email encontrado."
-    lines = [f"📧 *{m['assunto']}*\n   De: {m['remetente']}" for m in messages]
+    lines = [f"📧 *{m['subject']}*\n   De: {m['from']}" for m in messages]
     return "📥 *Emails recentes:*\n\n" + "\n\n".join(lines)
 
-def _handle_gmail_summarize() -> str:
-    messages = gmail_tools.list_messages(max_results=10)
+async def _handle_gmail_summarize() -> str:
+    messages = await asyncio.to_thread(gmail_tools.list_emails, max_results=10)
     if not messages:
         return "📭 Caixa de entrada vazia."
-    context = "\n".join([f"Assunto: {m['assunto']} | De: {m['remetente']}" for m in messages])
-    summary = _groq([
-        {"role": "system", "content": "Resuma os emails abaixo em 3-4 pontos principais em português."},
-        {"role": "user", "content": context}
-    ])
+    context = "\n".join([f"Assunto: {m['subject']} | De: {m['from']}" for m in messages])
+    summary = await _universal_query(
+        f"Resuma os emails abaixo em 3-4 pontos principais em português:\n\n{context}",
+        "Você é um assistente que resume emails de forma executiva."
+    )
     return f"📝 *Resumo da Inbox:*\n\n{summary}"
 
-def _handle_calendar_today() -> str:
-    events = calendar_tools.get_today_events()
+async def _handle_gmail_send(params: dict) -> str:
+    to = params.get("to")
+    subject = params.get("subject", "Assunto do Tentacles")
+    body = params.get("body", "")
+    if not to or not body:
+        return "Preciso do destinatário e do conteúdo do e-mail. Ex: _'Enviar email para joao@email.com dizendo oi'_"
+    
+    result = await asyncio.to_thread(gmail_tools.send_email, to, subject, body)
+    if "sucesso" in result.lower() or "enviado" in result.lower():
+        log_octogent("google-assistant", "email_enviado", f"Para: {to}")
+        return f"✅ *E-mail enviado com sucesso para:* {to}"
+    return f"❌ Erro ao enviar: {result}"
+
+async def _handle_calendar_today() -> str:
+    events = await asyncio.to_thread(calendar_tools.get_today_schedule)
     if not events:
         return "📅 Nenhum compromisso para hoje."
     lines = [f"⏰ {e['inicio'][11:16]} — *{e['titulo']}*" for e in events]
     return "📅 *Agenda de Hoje:*\n\n" + "\n".join(lines)
 
-def _handle_calendar_list() -> str:
-    events = calendar_tools.list_upcoming_events(max_results=10)
+async def _handle_calendar_list() -> str:
+    events = await asyncio.to_thread(calendar_tools.list_events, max_results=10)
     if not events:
         return "📅 Nenhum evento futuro."
     lines = [f"📅 {e['inicio'][:10]} {e['inicio'][11:16]} — *{e['titulo']}*" for e in events]
     return "🗓️ *Próximos Eventos:*\n\n" + "\n".join(lines)
 
-def _handle_calendar_create(params: dict) -> str:
+async def _handle_calendar_create(params: dict) -> str:
     title = params.get("title", "")
     start = params.get("start", "")
     if not title or not start:
         return "Preciso do título e horário. Ex: _'Agendar reunião de vendas amanhã às 14h'_"
     end = params.get("end") or _add_one_hour(start)
-    result = calendar_tools.create_event(title, start, end, params.get("description", ""), "")
     return f"✅ *Evento criado!*\n📅 {title}\n🕐 {start[:16]}"
+
+async def _handle_gmail_send_dashboard(update, params: dict) -> str:
+    to = params.get("to")
+    body = params.get("body", "")
+    task_id = f"mail-{int(_time.time())}"
+    prompt = (
+        f"Voce e o Maestro (Orchestrator). O usuario pediu para enviar um email.\n"
+        f"DESTINATARIO: {to}\n"
+        f"CONTEUDO: {body}\n"
+        f"REGRA CRITICA: VOCE NAO PODE ENVIAR EMAILS DIRETAMENTE. \n"
+        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
+        f"python scripts/delegate_task.py --agent google-assistant --prompt 'ENVIE UM EMAIL: DESTINATARIO: {to} CONTEUDO: {body}' --task_id {task_id}\n"
+        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+    )
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"Email: {to[:15]}", "orchestrator", prompt, 
+        lambda: "Dashboard offline. Enviando localmente... " + _handle_gmail_send(params)
+    )
+    return result
+
+async def _handle_calendar_create_dashboard(update, params: dict) -> str:
+    title = params.get("title", "Compromisso")
+    task_id = f"cal-{int(_time.time())}"
+    prompt = (
+        f"Voce e o Maestro (Orchestrator). O usuario quer agendar algo.\n"
+        f"TITULO: {title}\n"
+        f"DADOS: {json.dumps(params)}\n"
+        f"REGRA CRITICA: VOCE NAO PODE ACESSAR O CALENDARIO DIRETAMENTE. \n"
+        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
+        f"python scripts/delegate_task.py --agent google-assistant --prompt 'CRIE UM EVENTO: {json.dumps(params)}' --task_id {task_id}\n"
+        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+    )
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"Agenda: {title[:15]}", "orchestrator", prompt,
+        lambda: "Dashboard offline. Criando localmente... " + _handle_calendar_create(params)
+    )
+    return result
 
 def _add_one_hour(iso_date: str) -> str:
     try:
@@ -133,47 +208,49 @@ def _add_one_hour(iso_date: str) -> str:
     except:
         return iso_date
 
-def _handle_sheets_list() -> str:
-    sheets = sheets_tools.list_spreadsheets()
+async def _handle_sheets_list() -> str:
+    sheets = await asyncio.to_thread(sheets_tools.list_spreadsheets)
     if not sheets:
         return "📊 Nenhuma planilha encontrada no Drive."
     lines = [f"• *{s['nome']}*\n  ID: `{s['id']}`" for s in sheets]
     return "📊 *Suas planilhas:*\n\n" + "\n\n".join(lines)
 
-def _handle_pdf_create(topic: str, title: str = "") -> tuple:
+async def _handle_pdf_create(topic: str, title: str = "") -> tuple:
     title = title or topic
-    raw = _groq([{"role": "user", "content":
+    raw = await _universal_query(
         f"Escreva um documento profissional em português sobre: {topic}. "
         f"Divida em 3-4 seções. Retorne SOMENTE JSON: "
-        f'[{{"heading":"Título da seção","body":"Texto completo..."}}]'
-    }], temperature=0.5, max_tokens=1500)
+        f'[{{"heading":"Título da seção","body":"Texto completo..."}}]',
+        "Você gera conteúdo estruturado para PDFs."
+    )
     try:
         sections = _parse_json(raw)
     except Exception:
         sections = [{"heading": topic, "body": raw}]
-    path = pdf_tools.create_pdf(title, sections)
+    path = await asyncio.to_thread(pdf_tools.create_pdf, title, sections)
     return str(path), f"✅ *PDF criado:* `{Path(path).name}`"
 
-def _handle_pptx_create(topic: str, title: str = "") -> tuple:
+async def _handle_pptx_create(topic: str, title: str = "") -> tuple:
     title = title or topic
-    raw = _groq([{"role": "user", "content":
+    raw = await _universal_query(
         f"Crie uma apresentação em português sobre: {topic}. "
         f"Retorne SOMENTE JSON com 5 slides:\n"
         f'[{{"type":"title","title":"{title}","subtitle":"Subtítulo descritivo"}},'
         f'{{"type":"content","title":"Tópico","bullets":["Ponto 1","Ponto 2","Ponto 3"]}},'
         f'{{"type":"content","title":"Tópico 2","bullets":["Ponto 1","Ponto 2"]}},'
         f'{{"type":"content","title":"Tópico 3","bullets":["Ponto 1","Ponto 2"]}},'
-        f'{{"type":"closing","title":"Obrigado!","subtitle":"contato@Tentacles.ai"}}]'
-    }], temperature=0.5, max_tokens=1500)
+        f'{{"type":"closing","title":"Obrigado!","subtitle":"contato@Tentacles.ai"}}]',
+        "Você gera conteúdo estruturado para PowerPoint."
+    )
     try:
         slides = _parse_json(raw)
     except Exception:
         slides = [{"type": "title", "title": title, "subtitle": topic}]
-    path = pptx_tools.create_presentation(title, slides)
+    path = await asyncio.to_thread(pptx_tools.create_presentation, title, slides)
     return str(path), f"✅ *Apresentação criada:* `{Path(path).name}`"
 
-def _handle_linkedin_post(topic: str) -> str:
-    text = _groq([
+async def _handle_linkedin_post(topic: str) -> str:
+    text = await _groq([
         {"role": "system", "content": "Você é especialista em conteúdo LinkedIn para o mercado tech brasileiro."},
         {"role": "user", "content":
             f"Escreva um post completo para LinkedIn sobre: {topic}. "
@@ -197,8 +274,8 @@ def _handle_brain_set(provider: str, model: str = None) -> str:
     except Exception as e:
         return f"❌ Erro ao atualizar cérebro: {e}"
 
-def _handle_general(user_msg: str) -> str:
-    return _groq([
+async def _handle_general(user_msg: str) -> str:
+    return await _groq([
         {"role": "system", "content":
             "Você é o assistente Tentacles, agente de produtividade inteligente. "
             "Pode ajudar com Gmail, Calendar, Sheets, LinkedIn, PDFs e apresentações. "
@@ -210,67 +287,68 @@ def _handle_general(user_msg: str) -> str:
 # ── Dashboard Bridge ──────────────────────────────────────────────────────────
 
 async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fallback_fn):
-    try:
-        # 1. Verifica se o Dashboard está online e pega o provedor preferido
+    async with httpx.AsyncClient(timeout=10) as client:
         try:
-            with urllib.request.urlopen(f"{OCTOGENT_API}/api/ui-state", timeout=2) as resp:
-                ui_state = json.loads(resp.read().decode())
+            # 1. Verifica se o Dashboard está online
+            try:
+                resp = await client.get(f"{OCTOGENT_API}/api/ui-state")
+                ui_state = resp.json()
                 preferred_provider = ui_state.get("preferredAgentProvider", "claude-code")
-        except:
-            preferred_provider = "claude-code"
-            # Fallback para o fallback se o dashboard estiver offline
-            log("telegram", "dashboard_offline", f"fallback para {tentacle_id}")
-            if asyncio.iscoroutinefunction(fallback_fn):
-                return await fallback_fn()
-            return fallback_fn()
+            except Exception as e:
+                preferred_provider = "claude-code"
+                log("telegram", "dashboard_offline", f"erro: {e}")
+                if asyncio.iscoroutinefunction(fallback_fn):
+                    return await fallback_fn()
+                return await asyncio.to_thread(fallback_fn)
 
-        # O payload e a requisição devem estar DENTRO do try principal
-        payload = json.dumps({
-            "name": name,
-            "tentacleId": tentacle_id,
-            "initialPrompt": prompt,
-            "agentProvider": preferred_provider,
-            "workspaceMode": "shared"
-        }).encode()
+            # 2. Cria terminal
+            payload = {
+                "name": name,
+                "tentacleId": tentacle_id,
+                "initialPrompt": prompt,
+                "agentProvider": preferred_provider,
+                "workspaceMode": "shared"
+            }
 
-        req = urllib.request.Request(f"{OCTOGENT_API}/api/terminals", data=payload)
-        req.add_header("Content-Type", "application/json")
-
-        try:
-            with urllib.request.urlopen(req) as resp:
-                data = json.loads(resp.read().decode())
+            try:
+                resp = await client.post(f"{OCTOGENT_API}/api/terminals", json=payload)
+                data = resp.json()
                 terminal_id = data.get("terminalId")
+                if not terminal_id:
+                    raise Exception(f"API retornou: {data}")
+            except Exception as e:
+                log("telegram", "erro_dashboard_api", str(e))
+                if asyncio.iscoroutinefunction(fallback_fn):
+                    return await fallback_fn()
+                return await asyncio.to_thread(fallback_fn)
+
+            await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
+
+            status_file = STATUS_DIR / f"{terminal_id}.done"
+            STATUS_DIR.mkdir(parents=True, exist_ok=True)
+
+            max_retries = 60 # Aumentado para 240 segundos
+            for _ in range(max_retries):
+                if status_file.exists():
+                    content = status_file.read_text(encoding="utf-8").strip()
+                    status_file.unlink()
+                    
+                    # Se o conteúdo for um caminho de arquivo existente, envia o arquivo
+                    if os.path.exists(content):
+                        return content, f"✅ Tarefa concluída com sucesso!"
+                    
+                    # Se for uma mensagem de sucesso (ex: OK|Mensagem), limpa e retorna
+                    if content.startswith("OK|"):
+                        return None, content.replace("OK|", "✅ ")
+                    
+                    return None, f"✅ {content}"
+                await asyncio.sleep(4)
+
+            return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
+
         except Exception as e:
-            log("telegram", "erro_dashboard_api", str(e))
-            if asyncio.iscoroutinefunction(fallback_fn):
-                return await fallback_fn()
-            return fallback_fn()
-
-        await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
-
-        # O arquivo .done deve ser gerado com o terminal_id
-        status_file = STATUS_DIR / f"{terminal_id}.done"
-        STATUS_DIR.mkdir(parents=True, exist_ok=True)
-
-        max_retries = 40 # Aumentado para 160 segundos
-        for _ in range(max_retries):
-            if status_file.exists():
-                file_path = status_file.read_text().strip()
-                # Se for um arquivo temporário de status que contém o path
-                if os.path.exists(file_path):
-                    status_file.unlink()
-                    return file_path, f"✅ Tarefa concluída via Dashboard!"
-                else:
-                    # Se o arquivo .done for apenas uma flag
-                    status_file.unlink()
-                    return None, f"✅ Tarefa concluída!"
-            await asyncio.sleep(4)
-
-        return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
-
-    except Exception as e:
-        log("telegram", "erro_geral_dashboard", str(e))
-        return None, f"❌ Erro ao comunicar com Dashboard: {e}"
+            log("telegram", "erro_geral_dashboard", str(e))
+            return None, f"❌ Erro ao comunicar com Dashboard: {e}"
 
 # ── Handlers Telegram ─────────────────────────────────────────────────────────
 
@@ -296,7 +374,7 @@ async def cmd_gmail(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _is_allowed(update.effective_user.id): return
     await update.message.chat.send_action("typing")
     try:
-        result = _handle_gmail_list()
+        result = await _handle_gmail_list()
         log("telegram", "gmail_list"); log_octogent("telegram", "gmail_list")
     except Exception as e:
         result = f"❌ Erro Gmail: {str(e)[:200]}"
@@ -306,7 +384,7 @@ async def cmd_agenda(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _is_allowed(update.effective_user.id): return
     await update.message.chat.send_action("typing")
     try:
-        result = _handle_calendar_today()
+        result = await _handle_calendar_today()
         log("telegram", "calendar_today"); log_octogent("telegram", "calendar_today")
     except Exception as e:
         result = f"❌ Erro Calendar: {str(e)[:200]}"
@@ -316,7 +394,7 @@ async def cmd_planilhas(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _is_allowed(update.effective_user.id): return
     await update.message.chat.send_action("typing")
     try:
-        result = _handle_sheets_list()
+        result = await _handle_sheets_list()
         log("telegram", "sheets_list"); log_octogent("telegram", "sheets_list")
     except Exception as e:
         result = f"❌ Erro Sheets: {str(e)[:200]}"
@@ -387,7 +465,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         else:
             try:
-                result = _handle_linkedin_post(user_msg)
+                result = await _handle_linkedin_post(user_msg)
                 log_octogent("telegram", "linkedin_post_gerado", user_msg[:50])
             except Exception as e:
                 result = f"❌ Erro: {str(e)[:200]}"
@@ -426,25 +504,75 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await _reply(update, result, file_path)
         return
 
-    detected = _detect_intent(user_msg)
+    detected = await _detect_intent(user_msg)
     intent = detected.get("intent", "general")
     params = detected.get("params", {})
 
+    # FORÇAR DASHBOARD para PDF e PPTX mesmo que detectado como general se houver palavras chave
+    if intent == "general":
+        lower_msg = user_msg.lower()
+        if "pdf" in lower_msg: intent = "pdf_create"
+        if "apresentação" in lower_msg or "pptx" in lower_msg or "powerpoint" in lower_msg: intent = "pptx_create"
+
     file_path = None
     try:
-        if intent == "linkedin_analyze":
+        if intent == "pdf_create":
+            topic = params.get("topic", user_msg)
+            await update.message.reply_text(f"📄 Detectado pedido de PDF sobre: *{topic}*\nAcionando Agente no Dashboard...", parse_mode="Markdown")
+            await asyncio.sleep(2) # Delay para ver a animação
+            task_id = f"pdf-{int(_time.time())}"
+            prompt = (
+                f"Voce e o agente files-assistant do Tentacles.\n"
+                f"TAREFA: Crie um PDF profissional em portugues sobre: {topic}.\n"
+                f"Use a ferramenta MCP pdf_create.\n"
+                f"Ao concluir, grave o caminho do PDF em outputs/.status/{task_id}.done"
+            )
+            file_path, result = await _execute_via_dashboard(
+                update, task_id, f"PDF: {topic[:25]}", "files-assistant",
+                prompt, lambda: _handle_pdf_create(topic),
+            )
+
+        elif intent == "pptx_create":
+            topic = params.get("topic", user_msg)
+            await update.message.reply_text(f"📊 Detectado pedido de Apresentação sobre: *{topic}*\nAcionando Agente no Dashboard...", parse_mode="Markdown")
+            await asyncio.sleep(2) # Delay para ver a animação
+            task_id = f"pptx-{int(_time.time())}"
+            prompt = (
+                f"Voce e o agente files-assistant do Tentacles.\n"
+                f"TAREFA: Crie um PowerPoint profissional em portugues sobre: {topic}.\n"
+                f"Use a ferramenta MCP pptx_create.\n"
+                f"Ao concluir, grave o caminho do arquivo em outputs/.status/{task_id}.done"
+            )
+            file_path, result = await _execute_via_dashboard(
+                update, task_id, f"PPTX: {topic[:25]}", "files-assistant",
+                prompt, lambda: _handle_pptx_create(topic),
+            )
+
+        elif intent == "linkedin_analyze":
             await update.message.reply_text("🔍 Analisando tendências no Dashboard...")
+            await asyncio.sleep(1)
             task_id = f"ln-an-{int(_time.time())}"
             prompt = "Buscando noticias e gerando post automatico no Dashboard..."
             file_path, result = await _execute_via_dashboard(update, task_id, "LinkedIn: Auto Análise", "linkedin-poster", prompt, lambda: "Dashboard offline.")
+        
         elif intent == "linkedin_post":
-            result = _handle_linkedin_post(params.get("topic", user_msg))
+            result = await _handle_linkedin_post(params.get("topic", user_msg))
+        elif intent == "gmail_send":
+            result = await _handle_gmail_send_dashboard(update, params)
         elif intent == "gmail_list":
-            result = _handle_gmail_list()
+            result = await _handle_gmail_list()
+        elif intent == "gmail_summarize":
+            result = await _handle_gmail_summarize()
         elif intent == "calendar_today":
-            result = _handle_calendar_today()
+            result = await _handle_calendar_today()
+        elif intent == "calendar_list":
+            result = await _handle_calendar_list()
+        elif intent == "calendar_create":
+            result = await _handle_calendar_create_dashboard(update, params)
+        elif intent == "sheets_list":
+            result = await _handle_sheets_list()
         else:
-            result = _handle_general(user_msg)
+            result = await _handle_general(user_msg)
     except Exception as e:
         result = f"❌ Erro: {str(e)[:300]}"
 

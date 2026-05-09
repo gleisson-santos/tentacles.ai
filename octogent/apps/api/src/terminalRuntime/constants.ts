@@ -8,8 +8,8 @@ export const DEFAULT_AGENT_PROVIDER = "claude-code" as const;
 
 export const TERMINAL_BOOTSTRAP_COMMANDS: Record<string, string> = {
   codex: "codex",
-  "claude-code": "claude",
-  "gemini-cli": "gemini",
+  "claude-code": "claude --permission-mode acceptEdits",
+  "gemini-cli": "gemini -y",
   "tentacles-agent": "python scripts/tentacles_agent.py",
 };
 export const TERMINAL_SESSION_IDLE_GRACE_MS = 5 * 60 * 1000;

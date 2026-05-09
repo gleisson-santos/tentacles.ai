@@ -1,51 +1,29 @@
-# Google Assistant
+# Contexto: Google Assistant
 
-## Scope
-Integração completa com Gmail, Google Calendar e Google Sheets via OAuth2. Expõe ferramentas via MCP Server (FastMCP) para Claude Code e via chamadas diretas do Telegram Bot.
+Este agente é o centro operacional administrativo do ecossistema Tentacles. Ele integra Gmail, Google Calendar e Google Sheets para automação de fluxo de trabalho.
 
-## Key Files
-- `mcp_servers/google_mcp/server.py` — MCP Server principal (14 ferramentas)
-- `mcp_servers/google_mcp/auth.py` — OAuth2 setup (rodar 1x para gerar token)
-- `mcp_servers/google_mcp/gmail_tools.py` — funções Gmail
-- `mcp_servers/google_mcp/calendar_tools.py` — funções Calendar
-- `mcp_servers/google_mcp/sheets_tools.py` — funções Sheets
-- `mcp_servers/google_mcp/credentials/token.json` — token OAuth2 (não commitar)
-- `mcp_servers/google_mcp/credentials/client_secret.json` — app credentials (não commitar)
+## Objetivos
+- Ser o assistente pessoal proativo do usuário.
+- Facilitar a comunicação via e-mail e a organização de tempo via calendário.
+- Permitir análise e armazenamento de dados estruturados em planilhas.
 
-## Scopes OAuth2 ativos
-- `gmail.modify` — ler, enviar, deletar emails
-- `calendar` — criar, editar, deletar eventos
-- `spreadsheets` — ler e escrever planilhas
-- `drive.readonly` — listar arquivos no Drive
+## Arquitetura das Ferramentas
+O agente utiliza o servidor MCP em `mcp_servers/google_mcp/server.py` que por sua vez utiliza SDKs oficiais do Google via módulos especializados:
+- `gmail_tools.py`: Interação com a API do Gmail.
+- `calendar_tools.py`: Interação com a API do Google Calendar.
+- `sheets_tools.py`: Interação com a API do Google Sheets.
 
-## Key Decisions
-- Token é salvo em `credentials/token.json` e renovado automaticamente
-- Se token expirar, `get_credentials()` usa refresh_token automaticamente
-- MCP Server usa stdio transport (registrado no settings.local.json)
-- Fuso horário: America/Sao_Paulo (UTC-3) para Calendar
+## Autenticação (CRÍTICO)
+As credenciais OAuth2 são armazenadas em `mcp_servers/google_mcp/credentials/`.
+- `client_secret.json`: Deve ser fornecido pelo usuário (obtido no Google Cloud Console).
+- `token.json`: Gerado automaticamente após o primeiro login bem-sucedido.
 
-## Ferramentas MCP disponíveis
-### Gmail
-- `gmail_list(max_results)` — lista emails recentes
-- `gmail_read(email_id)` — lê email completo
-- `gmail_send(to, subject, body)` — envia email
-- `gmail_delete(email_id)` — move para lixeira
-- `gmail_summarize(max_emails)` — resumo da caixa de entrada
+## Casos de Uso Comuns
+1. **Triagem de E-mail**: "Resuma os e-mails importantes de hoje e me diga se há algo urgente."
+2. **Gestão de Reuniões**: "Verifique minha agenda de amanhã e reserve 1h para 'Foco no Projeto' às 10h."
+3. **Log de Dados**: "Adicione uma linha na planilha 'Gastos 2026' com o valor de R$ 50,00 para 'Almoço'."
 
-### Calendar
-- `calendar_list(days_ahead)` — próximos eventos
-- `calendar_today()` — agenda de hoje
-- `calendar_create(title, start, end, description, location)` — cria evento
-- `calendar_update(event_id, ...)` — atualiza evento
-- `calendar_delete(event_id)` — remove evento
-
-### Sheets
-- `sheets_list()` — lista planilhas no Drive
-- `sheets_read(spreadsheet_id, range_name)` — lê dados
-- `sheets_write(spreadsheet_id, range_name, values_json)` — escreve dados
-- `sheets_append(spreadsheet_id, sheet_name, row_json)` — adiciona linha
-- `sheets_create(title, headers_json)` — cria planilha nova
-
-## Related Tentacles
-- `telegram-bot` — chama ferramentas diretamente via import
-- `orchestrator` — delega pedidos Gmail/Calendar/Sheets
+## Configurações e Limites
+- Máximo de e-mails por listagem: 20 (padrão 10).
+- Calendário: Busca eventos até 30 dias à frente por padrão.
+- Sheets: Leitura limitada às primeiras 50 linhas para evitar estouro de contexto.

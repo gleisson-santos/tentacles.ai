@@ -5,7 +5,7 @@ export type { AgentRuntimeState };
 const PROCESSING_PATTERN = /esc to interrupt/i;
 
 const DEFAULT_MAX_BUFFER_LENGTH = 256;
-const DEFAULT_IDLE_AFTER_MS = 1_600;
+const DEFAULT_IDLE_AFTER_MS = 10_000;
 
 const ESCAPE_CODE = 27;
 const BEL_CODE = 7;

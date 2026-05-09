@@ -36,7 +36,7 @@ const isTerminalLifecycleState = (value: unknown): value is TerminalLifecycleSta
   value === "stale";
 
 const inferTerminalNameOrigin = (terminalId: string, tentacleName: string): TerminalNameOrigin => {
-  if (tentacleName === terminalId || /^Octogent Terminal \d+$/.test(tentacleName)) {
+  if (tentacleName === terminalId || /^Universal Brain \d+$/.test(tentacleName)) {
     return "generated";
   }
 
@@ -132,6 +132,10 @@ const parsePersistedUiState = (value: unknown): PersistedUiState => {
     Number.isFinite(value.canvasTerminalsPanelWidth)
   ) {
     nextState.canvasTerminalsPanelWidth = value.canvasTerminalsPanelWidth;
+  }
+
+  if (isTerminalAgentProvider(value.preferredAgentProvider)) {
+    nextState.preferredAgentProvider = value.preferredAgentProvider;
   }
 
   return nextState;

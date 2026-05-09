@@ -1,10 +1,11 @@
-# Tentacles — Plataforma de Agentes de Produtividade (GEMINI.md)
+# Tentacles — GEMINI.md (Memória Operacional para Gemini CLI)
 
 ## Objetivo
-Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calendar/Sheets, criação de PDFs/PPTX e chatbot Telegram — tudo orquestrado via Gemini CLI / Claude Code + Octogent dashboard.
+Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calendar/Sheets, criação de PDFs/PPTX, transcrição YouTube → Reels, chatbot Telegram com intenção inteligente — tudo orquestrado visualmente via Octogent Dashboard.
 
 ## Tech Stack
-- **IA de texto:** Groq API — `llama-3.3-70b-versatile`
+- **LLM principal:** OpenRouter — `x-ai/grok-4.1-fast`
+- **LLM alternativo:** Groq API — `llama-3.3-70b-versatile`
 - **IA de imagem:** Stability AI — `v2beta/stable-image/generate/core`
 - **LinkedIn:** OAuth2 + LinkedIn API v2
 - **Google:** Gmail API + Calendar API + Sheets API + Drive API (OAuth2)
@@ -19,63 +20,102 @@ Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calenda
 
 | Agente | Arquivo Principal | Responsabilidade |
 |--------|-------------------|------------------|
-| agent-skills | — | `.claude/skills/` — comportamento detalhado de cada agente |
-| files-assistant | `mcp_servers/files_mcp/server.py` | Criação de PDFs e apresentações PowerPoint |
-| google-assistant | `mcp_servers/google_mcp/server.py` | Gmail, Google Calendar e Google Sheets |
-| linkedin-poster | `auto_poster.py` | Auto-post LinkedIn a cada 2h (Groq + Stability AI) |
-| orchestrator | `.claude/skills/proactive-agent.md` | Coordenador central, monitora canal `tentacles-events` |
-| platform-infra | — | `start_tentacles.ps1` — launcher que sobe todos os serviços |
-| telegram-bot | `bots/telegram_bot.py` | Interface Telegram → detecta intenção → executa via Dashboard |
-| trends-intelligence | `scripts/trends_monitor.py` | Monitoramento contínuo de notícias (Terminal --loop) via Agente |
-| tentacles-agent | `scripts/tentacles_agent.py` | CLI Agente Universal que utiliza Groq/OpenRouter |
+| `orchestrator` | `mcp_servers/orchestrator/server.py` | Coordenador central — delega tarefas via `delegate_task.py` |
+| `google-assistant` | `mcp_servers/google_mcp/server.py` | Gmail, Calendar, Sheets (OAuth2 ativo) |
+| `files-assistant` | `mcp_servers/files_mcp/server.py` | PDF + PowerPoint via MCP |
+| `linkedin-poster` | `mcp_servers/linkedin_mcp/server.py` | Post LinkedIn com texto + imagem (Stability AI) |
+| `reels-factory` | `mcp_servers/reels-factory/server.py` | Transcrição YouTube → roteiro Reels |
+| `platform-infra` | `mcp_servers/platform-infra/server.py` | Diagnóstico de serviços (porta, disco, processos) |
+| `telegram-bot` | `bots/telegram_bot.py` | Interface de comando + bridge para Dashboard |
+| `agent-skills` | `.claude/skills/` | Repositório de comportamentos dos agentes |
 
 ## Estrutura de Arquivos Principais
+
 ```
-Tentacles/
-├── CLAUDE.md                          ← Referência para Claude Code
-├── GEMINI.md                          ← LEIA PRIMEIRO (Instruções para Gemini CLI)
+tentacles/
+├── CLAUDE.md / GEMINI.md              ← Memória operacional
+├── DEV_PROGRESS.md                    ← Log de progresso (bugs, pendências, roadmap)
 ├── auto_poster.py                     ← Loop LinkedIn (2h)
+│
+├── mcp_servers/
+│   ├── google_mcp/                    ← Gmail + Calendar + Sheets
+│   ├── files_mcp/                     ← PDF + PPTX
+│   ├── linkedin_mcp/                  ← LinkedIn (atenção: underscore, não hífen)
+│   ├── reels-factory/                 ← YouTube → Reels
+│   ├── orchestrator/                  ← Delegação (get_last_activity, delegate_to_agent)
+│   ├── platform-infra/                ← Saúde do sistema
+│   └── llm_bridge/                    ← Switcher multi-LLM
+│
+├── bots/telegram_bot.py               ← Bot Telegram com 12+ intenções
 ├── scripts/
-│   ├── tentacles_agent.py             ← CLI Agente Universal
-│   ├── trends_monitor.py              ← Script de tendências
-│   ├── new_tentacle.py                ← Criador de tentáculos
-│   └── sync_tentacles.py              ← Sincronizador
+│   ├── delegate_task.py               ← Força criação de terminal real no Dashboard
+│   ├── new_tentacle.py                ← Cria novo tentáculo completo
+│   └── trends_monitor.py             ← Monitor de tendências (loop)
+│
+├── logs/logger.py                     ← Log local + canal tentacles-events
+└── outputs/.status/                   ← IPC: {task_id}.done com "OK|mensagem"
 ```
+
+## Fluxo de Orquestração Principal
+
+```
+Telegram → Bot (intent detection) → Dashboard API → Orchestrator Terminal
+    → scripts/delegate_task.py → Google Assistant Terminal
+    → outputs/.status/{task_id}.done → Telegram ✅
+```
+
+## Arquitetura do Gráfico de Orquestração (Hierarquia)
+
+- **Lógica de hierarquia:** `octogent/apps/web/src/app/hooks/useCanvasGraphData.ts`
+- **Curvatura das linhas:** `octogent/apps/web/src/components/canvas/OctopusNode.tsx`
+- **Animações/bolinhas:** `octogent/apps/web/src/components/CanvasPrimaryView.tsx`
+
+O sistema suporta Deep Nesting (Pai > Filho > Neto) via `parentTerminalId`.
+Para manter agentes no círculo central (sem hierarquia), **não passar** `parentTerminalId`.
 
 ## Comandos de Execução Comuns
 
 ```powershell
-# Configurar tudo (1ª vez ou novo PC)
-./setup.ps1
+# Iniciar todos os serviços
+.\start_tentacles.ps1
 
-# Iniciar todos os serviços de uma vez
-./start_tentacles.ps1
+# Setup inicial (1ª vez ou novo PC)
+.\setup.ps1
 
 # Criar novo tentáculo
 python scripts/new_tentacle.py <nome> "<descricao>" [--mcp] [--color "#RRGGBB"]
+
+# Delegar tarefa manualmente (debug)
+python scripts/delegate_task.py --agent google-assistant --prompt "ENVIE EMAIL: ..." --task_id debug-01
+
+# Autenticação Google (se token expirar)
+python mcp_servers/google_mcp/auth.py
 ```
 
-## Arquitetura Bridge (Telegram → Octogent)
-O bot do Telegram detecta intenções e se comunica com o Octogent via API HTTP (porta 8787). O Octogent orquestra a execução via Claude Code/Gemini CLI. Os resultados são comunicados via arquivos `.done` em `outputs/.status/`.
+## Estado Atual (09/05/2026)
 
-## Arquitetura do Gráfico de Orquestração (Hierarquia)
-- **Onde alterar a lógica:** `octogent/apps/web/src/app/hooks/useCanvasGraphData.ts`
-- **Onde alterar as linhas/curvatura:** `octogent/apps/web/src/components/canvas/OctopusNode.tsx`
-- **Onde alterar animações/bolinhas:** `octogent/apps/web/src/components/CanvasPrimaryView.tsx`
+### ✅ Funcional
+- Orquestração visual com 8 tentáculos
+- Bridge Telegram ↔ Dashboard ↔ Agente
+- Google Assistant (Gmail, Calendar, Sheets)
+- Files Assistant (PDF, PPTX)
+- Fábrica de Reels (rebrandeada, MCP ativo)
+- Orchestrator + Platform Infra com MCPs reais
+- Multi-LLM via `/brain` no Telegram
 
-O sistema agora suporta **Deep Nesting** (Pai > Filho > Neto) baseado no `parentTerminalId` dos agentes. Se um agente for criado a partir de outro tentáculo, a linha de conexão seguirá a hierarquia em vez de ir para o Octoboss central.
+### 🔴 Pendente
+- LinkedIn Poster: integração ao fluxo de delegação
+- Confirmação "OK|mensagem" padronizada para todos os agentes filhos
+- Trends Intelligence: reativar modo loop
 
 ## Regras e Convenções para Gemini CLI
-1. **Prioridade de Contexto:** Sempre consulte `GEMINI.md` e `CLAUDE.md` para entender o estado atual e as regras do projeto.
-2. **Segurança de Credenciais:** Nunca versione ou exiba segredos. Atenção especial a `mcp_servers/google_mcp/credentials/` e arquivos `.env`.
-3. **Gerenciamento de Arquivos:** Use `grep_search` e `glob` para buscas pontuais. Evite ler muitos arquivos simultaneamente para economizar contexto.
-4. **Localização de Saídas:**
-   - PDFs: `outputs/pdfs/`
-   - PPTX: `outputs/presentations/`
-   - Status de tarefas: `outputs/.status/`
-5. **Integração Octogent:** Interações com o Dashboard devem preferencialmente usar a API HTTP `http://127.0.0.1:8787`.
-6. **Scripts de Manutenção:** Ao adicionar novos agentes ou funcionalidades, utilize `scripts/new_tentacle.py` e mantenha a documentação sincronizada com `scripts/sync_tentacles.py` (se aplicável).
-7. **Estilo de Código:** Siga o padrão idiomático Python 3.14 e utilize as abstrações de logging definidas em `logs/logger.py`.
 
-## Estado Atual e Próximos Passos
-Consulte a seção correspondente no `CLAUDE.md` para a atualização mais recente do status de desenvolvimento.
+1. **Prioridade de Contexto:** Leia `CLAUDE.md` + `DEV_PROGRESS.md` antes de qualquer sessão
+2. **Segurança:** Nunca versione `token.json`, `client_secret.json` ou `.env`
+3. **Buscas:** Use `grep_search` e `list_dir` — evite ler muitos arquivos simultaneamente
+4. **Outputs:** PDFs → `outputs/pdfs/` | PPTX → `outputs/presentations/` | Status → `outputs/.status/`
+5. **API Octogent:** Sempre HTTP `http://127.0.0.1:8787` — não subprocess sem `shell=True`
+6. **LinkedIn MCP:** `mcp_servers/linkedin_mcp/` (underscore!) — não confundir com `linkedin-poster/`
+7. **Delegação:** Usar `scripts/delegate_task.py` para abrir terminais reais no Dashboard
+8. **IPC:** Agente filho deve gravar `OK|mensagem` em `outputs/.status/{task_id}.done`
+9. **Novos agentes:** Usar `scripts/new_tentacle.py` + atualizar `CLAUDE.md` e `DEV_PROGRESS.md`

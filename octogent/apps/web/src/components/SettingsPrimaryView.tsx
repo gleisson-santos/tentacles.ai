@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   TERMINAL_COMPLETION_SOUND_OPTIONS,
   type TerminalCompletionSoundId,
 } from "../app/notificationSounds";
+import type { TerminalAgentProvider } from "../app/types";
 import { ActionButton } from "./ui/ActionButton";
 import { SettingsToggle } from "./ui/SettingsToggle";
 
@@ -10,29 +11,29 @@ type SettingsPrimaryViewProps = {
   terminalCompletionSound: TerminalCompletionSoundId;
   isRuntimeStatusStripVisible: boolean;
   isMonitorVisible: boolean;
+  preferredAgentProvider: TerminalAgentProvider;
   onTerminalCompletionSoundChange: (soundId: TerminalCompletionSoundId) => void;
   onPreviewTerminalCompletionSound: (soundId: TerminalCompletionSoundId) => void;
   onRuntimeStatusStripVisibilityChange: (visible: boolean) => void;
   onMonitorVisibilityChange: (visible: boolean) => void;
+  onPreferredAgentProviderChange: (provider: TerminalAgentProvider) => void;
 };
 
 export const SettingsPrimaryView = ({
   terminalCompletionSound,
   isRuntimeStatusStripVisible,
   isMonitorVisible,
+  preferredAgentProvider,
   onTerminalCompletionSoundChange,
   onPreviewTerminalCompletionSound,
   onRuntimeStatusStripVisibilityChange,
   onMonitorVisibilityChange,
+  onPreferredAgentProviderChange,
 }: SettingsPrimaryViewProps) => {
   const [provider, setProvider] = useState("openrouter");
   const [model, setModel] = useState("openai/gpt-4o-mini-2024-07-18");
   const [apiKey, setApiKey] = useState("");
   const [isSaved, setIsSaved] = useState(false);
-  const [preferredCli, setPreferredCli] = useState<string>(
-    // @ts-ignore
-    window.octogentUiState?.preferredAgentProvider || "claude-code"
-  );
 
   const envMap: Record<string, string> = {
     openrouter: "OPENROUTER_API_KEY",
@@ -57,14 +58,9 @@ export const SettingsPrimaryView = ({
         })
       });
 
-      // 2. Save UI State (Preferred CLI)
-      await fetch('/api/ui-state', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          preferredAgentProvider: preferredCli
-        })
-      });
+      // Note: preferredAgentProvider is already synced to the global state via onPreferredAgentProviderChange
+      // which is called in real-time by the select onChange handler.
+      // The usePersistedUiState hook persists it automatically to /api/ui-state.
 
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
@@ -91,7 +87,7 @@ export const SettingsPrimaryView = ({
           </div>
           <div className="settings-field">
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#aaa' }}>CLI Agente Preferido</label>
-            <select value={preferredCli} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => setPreferredCli(e.target.value)}>
+            <select value={preferredAgentProvider} style={{ background: '#1a1a1a', color: '#fff', border: '1px solid #333', padding: '0.6rem', width: '100%', borderRadius: '4px' }} onChange={(e) => onPreferredAgentProviderChange(e.target.value as TerminalAgentProvider)}>
               <option value="claude-code">Claude Code CLI</option>
               <option value="gemini-cli">Gemini CLI</option>
               <option value="tentacles-agent">Tentacles Agent (Universal)</option>

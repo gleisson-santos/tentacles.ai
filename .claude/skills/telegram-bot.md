@@ -1,7 +1,7 @@
 # Skill: Telegram Bot
 
 ## Papel
-Interface via Telegram
+Interface de comando via Telegram com detecção de intenção.
 
 ## Quando acionar
 - Quando o usuário pedir algo relacionado a telegram bot

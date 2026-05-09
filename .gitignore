@@ -40,3 +40,11 @@ octogent/dist/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Custom
+TESTE/
+
+# Octogent auto-generated (não commitar)
+spawn_workers.js
+worker_terminal/
+outputs/.status/

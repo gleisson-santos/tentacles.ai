@@ -16,6 +16,7 @@ python-pptx
 lxml
 
 # Web & Tools
+yt-dlp
 httpx
 requests
 feedparser
