@@ -43,12 +43,12 @@ def list_emails(max_results: int = 10, label: str = "INBOX") -> list[dict]:
             userId="me", id=msg["id"], format="metadata",
             metadataHeaders=["From", "Subject", "Date"]
         ).execute()
-        headers = {h["name"]: h["value"] for h in detail["payload"]["headers"]}
+        headers = {h["name"].lower(): h["value"] for h in detail["payload"]["headers"]}
         emails.append({
             "id": msg["id"],
-            "from": headers.get("From", ""),
-            "subject": headers.get("Subject", "(sem assunto)"),
-            "date": headers.get("Date", ""),
+            "from": headers.get("from", ""),
+            "subject": headers.get("subject", "(sem assunto)"),
+            "date": headers.get("date", ""),
             "snippet": detail.get("snippet", ""),
         })
     return emails
@@ -58,14 +58,14 @@ def get_email(email_id: str) -> dict:
     """Lê o conteúdo completo de um email pelo ID."""
     svc = _service()
     msg = svc.users().messages().get(userId="me", id=email_id, format="full").execute()
-    headers = {h["name"]: h["value"] for h in msg["payload"]["headers"]}
+    headers = {h["name"].lower(): h["value"] for h in msg["payload"]["headers"]}
     body = _decode_body(msg["payload"])
     return {
         "id": email_id,
-        "from": headers.get("From", ""),
-        "to": headers.get("To", ""),
-        "subject": headers.get("Subject", "(sem assunto)"),
-        "date": headers.get("Date", ""),
+        "from": headers.get("from", ""),
+        "to": headers.get("to", ""),
+        "subject": headers.get("subject", "(sem assunto)"),
+        "date": headers.get("date", ""),
         "body": body[:3000],
     }
 
@@ -74,8 +74,8 @@ def send_email(to: str, subject: str, body: str) -> str:
     """Envia um email."""
     svc = _service()
     msg = MIMEMultipart()
-    msg["to"] = to
-    msg["subject"] = subject
+    msg["To"] = to
+    msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain", "utf-8"))
     raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
     sent = svc.users().messages().send(userId="me", body={"raw": raw}).execute()

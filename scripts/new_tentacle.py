@@ -91,11 +91,14 @@ def _todo_md(name: str, description: str) -> str:
     return f"""# {name.replace("-", " ").title()} — Todo
 
 ## Backlog
-- [ ] Definir ferramentas e responsabilidades deste agente
-- [ ] Implementar lógica principal
-- [ ] Integrar com orchestrator via canal clilink-events
+- [ ] Integrar com orchestrator via canal tentacles-events
 - [ ] Adicionar testes
 - [ ] Documentar no CONTEXT.md
+- [ ] {description}
+
+## Dica de Swarm (Windows)
+Ao criar workers via CLI, use aspas simples para o JSON ou escape as aspas duplas:
+--prompt-variables '{{\"key\": \"value\"}}'
 
 ## Concluído
 - [x] Tentáculo criado via new_tentacle.py

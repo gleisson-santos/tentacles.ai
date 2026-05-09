@@ -88,6 +88,7 @@ async def _detect_intent(text: str) -> dict:
     Analise a intenção do usuário abaixo e retorne um JSON com 'intent' e 'params'.
     Intenções possíveis:
     - gmail_list: listar emails recentes
+    - gmail_send: enviar um email (precisa de to, subject, body)
     - gmail_summarize: resumir caixa de entrada
     - calendar_today: agenda de hoje
     - calendar_list: listar próximos eventos
@@ -128,6 +129,19 @@ async def _handle_gmail_summarize() -> str:
     )
     return f"📝 *Resumo da Inbox:*\n\n{summary}"
 
+async def _handle_gmail_send(params: dict) -> str:
+    to = params.get("to")
+    subject = params.get("subject", "Assunto do Tentacles")
+    body = params.get("body", "")
+    if not to or not body:
+        return "Preciso do destinatário e do conteúdo do e-mail. Ex: _'Enviar email para joao@email.com dizendo oi'_"
+    
+    result = await asyncio.to_thread(gmail_tools.send_email, to, subject, body)
+    if "sucesso" in result.lower() or "enviado" in result.lower():
+        log_octogent("google-assistant", "email_enviado", f"Para: {to}")
+        return f"✅ *E-mail enviado com sucesso para:* {to}"
+    return f"❌ Erro ao enviar: {result}"
+
 async def _handle_calendar_today() -> str:
     events = await asyncio.to_thread(calendar_tools.get_today_schedule)
     if not events:
@@ -148,8 +162,44 @@ async def _handle_calendar_create(params: dict) -> str:
     if not title or not start:
         return "Preciso do título e horário. Ex: _'Agendar reunião de vendas amanhã às 14h'_"
     end = params.get("end") or _add_one_hour(start)
-    result = await asyncio.to_thread(calendar_tools.create_event, title, start, end, params.get("description", ""), "")
     return f"✅ *Evento criado!*\n📅 {title}\n🕐 {start[:16]}"
+
+async def _handle_gmail_send_dashboard(update, params: dict) -> str:
+    to = params.get("to")
+    body = params.get("body", "")
+    task_id = f"mail-{int(_time.time())}"
+    prompt = (
+        f"Voce e o Maestro (Orchestrator). O usuario pediu para enviar um email.\n"
+        f"DESTINATARIO: {to}\n"
+        f"CONTEUDO: {body}\n"
+        f"REGRA CRITICA: VOCE NAO PODE ENVIAR EMAILS DIRETAMENTE. \n"
+        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
+        f"python scripts/delegate_task.py --agent google-assistant --prompt 'ENVIE UM EMAIL: DESTINATARIO: {to} CONTEUDO: {body}' --task_id {task_id}\n"
+        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+    )
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"Email: {to[:15]}", "orchestrator", prompt, 
+        lambda: "Dashboard offline. Enviando localmente... " + _handle_gmail_send(params)
+    )
+    return result
+
+async def _handle_calendar_create_dashboard(update, params: dict) -> str:
+    title = params.get("title", "Compromisso")
+    task_id = f"cal-{int(_time.time())}"
+    prompt = (
+        f"Voce e o Maestro (Orchestrator). O usuario quer agendar algo.\n"
+        f"TITULO: {title}\n"
+        f"DADOS: {json.dumps(params)}\n"
+        f"REGRA CRITICA: VOCE NAO PODE ACESSAR O CALENDARIO DIRETAMENTE. \n"
+        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
+        f"python scripts/delegate_task.py --agent google-assistant --prompt 'CRIE UM EVENTO: {json.dumps(params)}' --task_id {task_id}\n"
+        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+    )
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"Agenda: {title[:15]}", "orchestrator", prompt,
+        lambda: "Dashboard offline. Criando localmente... " + _handle_calendar_create(params)
+    )
+    return result
 
 def _add_one_hour(iso_date: str) -> str:
     try:
@@ -280,13 +330,18 @@ async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fal
             max_retries = 60 # Aumentado para 240 segundos
             for _ in range(max_retries):
                 if status_file.exists():
-                    file_path = status_file.read_text().strip()
-                    if os.path.exists(file_path):
-                        status_file.unlink()
-                        return file_path, f"✅ Tarefa concluída via Dashboard!"
-                    else:
-                        status_file.unlink()
-                        return None, f"✅ Tarefa concluída!"
+                    content = status_file.read_text(encoding="utf-8").strip()
+                    status_file.unlink()
+                    
+                    # Se o conteúdo for um caminho de arquivo existente, envia o arquivo
+                    if os.path.exists(content):
+                        return content, f"✅ Tarefa concluída com sucesso!"
+                    
+                    # Se for uma mensagem de sucesso (ex: OK|Mensagem), limpa e retorna
+                    if content.startswith("OK|"):
+                        return None, content.replace("OK|", "✅ ")
+                    
+                    return None, f"✅ {content}"
                 await asyncio.sleep(4)
 
             return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
@@ -502,6 +557,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         elif intent == "linkedin_post":
             result = await _handle_linkedin_post(params.get("topic", user_msg))
+        elif intent == "gmail_send":
+            result = await _handle_gmail_send_dashboard(update, params)
         elif intent == "gmail_list":
             result = await _handle_gmail_list()
         elif intent == "gmail_summarize":
@@ -511,7 +568,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif intent == "calendar_list":
             result = await _handle_calendar_list()
         elif intent == "calendar_create":
-            result = await _handle_calendar_create(params)
+            result = await _handle_calendar_create_dashboard(update, params)
         elif intent == "sheets_list":
             result = await _handle_sheets_list()
         else:

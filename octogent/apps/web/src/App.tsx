@@ -1,4 +1,4 @@
-import { type TerminalSnapshot, buildTerminalList, isAgentRuntimeState } from "@octogent/core";
+import { type DeckAvailableSkill, type TerminalSnapshot, buildTerminalList, isAgentRuntimeState } from "@octogent/core";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { useBackendLivenessPolling } from "./app/hooks/useBackendLivenessPolling";
@@ -115,6 +115,10 @@ export const App = () => {
     | "create-tentacles"
     | null
   >(null);
+  const [isAddTentacleModalOpen, setIsAddTentacleModalOpen] = useState(false);
+  const [availableSkills, setAvailableSkills] = useState<DeckAvailableSkill[]>([]);
+  const [isCreatingTentacle, setIsCreatingTentacle] = useState(false);
+  const [createTentacleError, setCreateTentacleError] = useState<string | null>(null);
 
   const readColumns = useCallback(
     async (signal?: AbortSignal) => {
@@ -137,6 +141,54 @@ export const App = () => {
     setTerminals(nextColumns);
     return nextColumns;
   }, [readColumns]);
+
+  const fetchAvailableSkills = useCallback(async () => {
+    try {
+      const response = await fetch("/api/deck/skills");
+      if (response.ok) {
+        const data = (await response.json()) as DeckAvailableSkill[];
+        setAvailableSkills(data);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchAvailableSkills();
+  }, [fetchAvailableSkills]);
+
+  const handleCreateTentacleSubmit = useCallback(
+    async (
+      name: string,
+      description: string,
+      color: string,
+      octopus: any,
+      suggestedSkills: string[],
+    ) => {
+      setIsCreatingTentacle(true);
+      setCreateTentacleError(null);
+      try {
+        const response = await fetch("/api/deck/tentacles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, description, color, octopus, suggestedSkills }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          setCreateTentacleError(data.error || "Failed to create tentacle");
+          return;
+        }
+        setIsAddTentacleModalOpen(false);
+        await refreshColumns();
+      } catch (err) {
+        setCreateTentacleError("Network error");
+      } finally {
+        setIsCreatingTentacle(false);
+      }
+    },
+    [refreshColumns],
+  );
 
   const {
     clearPendingDeleteTerminal,
@@ -559,15 +611,19 @@ export const App = () => {
               onCreateWorktreeTerminal: async (parentTentacleId?: string) => {
                 return await createTerminal("worktree", preferredAgentProvider, parentTentacleId ?? OCTOBOSS_ID);
               },
-              onCreateTentacle: async () => {
-                const response = await fetch("/api/deck/tentacles", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name: "", description: "" }),
-                });
-                if (!response.ok) return;
-                await refreshColumns();
+              onCreateTentacle: () => {
+                console.log("onCreateTentacle clicked");
+                setIsAddTentacleModalOpen(true);
               },
+              isAddTentacleModalOpen,
+              onCloseAddTentacleModal: () => {
+                setIsAddTentacleModalOpen(false);
+                setCreateTentacleError(null);
+              },
+              onTentacleCreated: handleCreateTentacleSubmit,
+              availableSkills,
+              isCreatingTentacle,
+              createTentacleError,
               onSpawnSwarm: async (tentacleId, workspaceMode) => {
                 const response = await fetch(
                   `/api/deck/tentacles/${encodeURIComponent(tentacleId)}/swarm`,

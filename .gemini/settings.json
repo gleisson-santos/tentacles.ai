@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-youtube-transcript"
+      ]
+    },
+    "kimtaeyoon83-mcp-server-youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-youtube-transcript"
+      ]
+    }
+  }
+}

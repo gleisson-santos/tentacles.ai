@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { WorkspaceSetupSnapshot, WorkspaceSetupStepId } from "@octogent/core";
+import type {
+  DeckAvailableSkill,
+  TerminalSnapshot,
+  WorkspaceSetupSnapshot,
+  WorkspaceSetupStepId,
+} from "@octogent/core";
 import {
   Check as CheckIcon,
   ChevronDown,
@@ -34,6 +39,7 @@ import { CanvasTerminalColumn } from "./canvas/CanvasTerminalColumn";
 import { DeleteAllTerminalsDialog } from "./canvas/DeleteAllTerminalsDialog";
 import { OctopusNode } from "./canvas/OctopusNode";
 import { SessionNode } from "./canvas/SessionNode";
+import { AddTentacleForm } from "./deck/AddTentacleForm";
 import { WorkspaceSetupCard } from "./deck/WorkspaceSetupCard";
 
 type ContextMenuState =
@@ -72,6 +78,18 @@ type CanvasPrimaryViewProps = {
   onCreateTerminal?: (tentacleId?: string) => Promise<string | undefined> | undefined;
   onCreateWorktreeTerminal?: (tentacleId?: string) => Promise<string | undefined> | undefined;
   onCreateTentacle?: () => void;
+  isAddTentacleModalOpen?: boolean;
+  isCreatingTentacle?: boolean;
+  createTentacleError?: string | null;
+  availableSkills?: DeckAvailableSkill[];
+  onCloseAddTentacleModal?: () => void;
+  onTentacleCreated?: (
+    name: string,
+    description: string,
+    color: string,
+    octopus: any,
+    suggestedSkills: string[],
+  ) => void;
   onSpawnSwarm?: (tentacleId: string, workspaceMode: "shared" | "worktree") => Promise<void> | void;
   onSolveTodoItem?: (tentacleId: string, itemIndex: number) => Promise<void> | void;
   onOctobossAction?: (action: string) => Promise<string | undefined> | undefined;
@@ -133,11 +151,16 @@ const buildCanvasEdgePath = (
   return `M ${sx} ${sy} Q ${cpx} ${cpy} ${tx} ${ty}`;
 };
 
-const isEdgeActivityVisible = (target: GraphNode): boolean =>
-  target.type === "active-session" &&
-  target.hasUserPrompt !== false &&
-  target.agentRuntimeState !== undefined &&
-  target.agentRuntimeState !== "idle";
+const isEdgeActivityVisible = (target: GraphNode): boolean => {
+  const isWorking = target.agentRuntimeState !== undefined && target.agentRuntimeState !== "idle";
+  if (!isWorking) return false;
+  
+  if (target.type === "active-session") {
+    return target.hasUserPrompt !== false;
+  }
+  
+  return target.type === "tentacle" || target.type === "octoboss";
+};
 
 const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) =>
   [0, 1, 2].flatMap((index) => [
@@ -224,6 +247,12 @@ export const CanvasPrimaryView = ({
   onTerminalRenamed,
   onTerminalActivity,
   onRefreshColumns,
+  isAddTentacleModalOpen,
+  isCreatingTentacle,
+  createTentacleError,
+  availableSkills,
+  onCloseAddTentacleModal,
+  onTentacleCreated,
 }: CanvasPrimaryViewProps) => {
   const runtimeStateStoreRef = useRef<TerminalRuntimeStateStore | null>(null);
   if (runtimeStateStoreRef.current === null) {
@@ -1093,7 +1122,7 @@ export const CanvasPrimaryView = ({
             onClick={() => {
               const result = onCreateTerminal?.();
               if (result && typeof result.then === "function") {
-                void result.then((agentId) => {
+                void result.then((agentId: string | undefined) => {
                   if (agentId) setPendingOpenAgentId(agentId);
                 });
               }
@@ -1110,7 +1139,7 @@ export const CanvasPrimaryView = ({
             onClick={() => {
               const result = onCreateWorktreeTerminal?.();
               if (result && typeof result.then === "function") {
-                void result.then((agentId) => {
+                void result.then((agentId: string | undefined) => {
                   if (agentId) setPendingOpenAgentId(agentId);
                 });
               }
@@ -1359,7 +1388,7 @@ export const CanvasPrimaryView = ({
                     setContextMenu(null);
                     const result = onCreateTerminal?.();
                     if (result && typeof result.then === "function") {
-                      void result.then((agentId) => {
+                      void result.then((agentId: string | undefined) => {
                         if (agentId) setPendingOpenAgentId(agentId);
                       });
                     }
@@ -1377,7 +1406,7 @@ export const CanvasPrimaryView = ({
                     setContextMenu(null);
                     const result = onCreateWorktreeTerminal?.();
                     if (result && typeof result.then === "function") {
-                      void result.then((agentId) => {
+                      void result.then((agentId: string | undefined) => {
                         if (agentId) setPendingOpenAgentId(agentId);
                       });
                     }
@@ -1409,7 +1438,7 @@ export const CanvasPrimaryView = ({
                     setContextMenu(null);
                     const result = onCreateTerminal?.(contextMenu.tentacleId);
                     if (result && typeof result.then === "function") {
-                      void result.then((agentId) => {
+                      void result.then((agentId: string | undefined) => {
                         if (agentId) setPendingOpenAgentId(agentId);
                       });
                     }
@@ -1427,7 +1456,7 @@ export const CanvasPrimaryView = ({
                     setContextMenu(null);
                     const result = onCreateWorktreeTerminal?.(contextMenu.tentacleId);
                     if (result && typeof result.then === "function") {
-                      void result.then((agentId) => {
+                      void result.then((agentId: string | undefined) => {
                         if (agentId) setPendingOpenAgentId(agentId);
                       });
                     }
@@ -1567,6 +1596,19 @@ export const CanvasPrimaryView = ({
               refreshGraphData();
             }}
           />
+        </div>
+      )}
+      {isAddTentacleModalOpen && onTentacleCreated && onCloseAddTentacleModal && (
+        <div className="deck-add-overlay">
+          <div className="deck-add-overlay-panel">
+            <AddTentacleForm
+              onSubmit={onTentacleCreated}
+              onCancel={onCloseAddTentacleModal}
+              isSubmitting={isCreatingTentacle ?? false}
+              error={createTentacleError ?? null}
+              availableSkills={availableSkills ?? []}
+            />
+          </div>
         </div>
       )}
     </section>

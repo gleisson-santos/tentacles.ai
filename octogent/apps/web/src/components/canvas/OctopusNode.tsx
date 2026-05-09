@@ -124,10 +124,16 @@ const GLYPH_SCALE = 4;
 const GLYPH_W = 112;
 const GLYPH_H = 120;
 
-const isEdgeActivityVisible = (node: GraphNode): boolean =>
-  (node.type === "active-session" || node.type === "tentacle" || node.type === "octoboss") &&
-  node.agentRuntimeState !== undefined &&
-  node.agentRuntimeState !== "idle";
+const isEdgeActivityVisible = (node: GraphNode): boolean => {
+  const isWorking = node.agentRuntimeState !== undefined && node.agentRuntimeState !== "idle";
+  if (!isWorking) return false;
+  
+  if (node.type === "active-session") {
+    return node.hasUserPrompt !== false;
+  }
+  
+  return node.type === "tentacle" || node.type === "octoboss";
+};
 
 const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) =>
   [0, 1, 2, 3, 4].flatMap((index) => [

@@ -1843,3 +1843,39 @@
   --action-button-padding-x: 0.4rem;
   --action-button-letter-spacing: 0.07em;
 }
+
+/* ─── Add Tentacle Modal Overlay ────────────────────────────────────────── */
+
+.canvas-tentacle-modal-overlay {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  width: min(720px, calc(100% - 64px));
+  max-height: calc(100% - 64px);
+  overflow-y: auto;
+  animation: canvas-modal-fade-in 0.25s ease-out;
+  padding: 24px;
+}
+
+@keyframes canvas-modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.canvas-delete-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 14, 20, 0.8);
+  backdrop-filter: blur(8px);
+}

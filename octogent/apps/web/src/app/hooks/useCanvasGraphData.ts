@@ -276,6 +276,18 @@ export const useCanvasGraphData = ({
     const angle = (2 * Math.PI * i) / Math.max(totalTentacles, 1);
     const spread = 300;
 
+    const anyActiveTerminalWorking = activeTerminals?.some(t => {
+      // Verifica no mapa de estados em tempo real
+      const info = agentRuntimeStates?.get(t.terminalId);
+      if (info && info.state !== "idle") return true;
+      
+      // Fallback: verifica direto no objeto do terminal (caso o mapa ainda não tenha sincronizado)
+      if (t.agentRuntimeState && t.agentRuntimeState !== "idle") return true;
+      
+      // Verifica se o estado geral do terminal indica atividade
+      return (t.state as any) === "active" || (t.state as any) === "busy";
+    });
+
     const node: GraphNode = {
       id: tentacleNodeId,
       type: "tentacle",
@@ -288,6 +300,7 @@ export const useCanvasGraphData = ({
       tentacleId,
       label,
       color,
+      agentRuntimeState: anyActiveTerminalWorking ? "processing" : "idle",
       ...(firstActiveTerminal ? { workspaceMode: firstActiveTerminal.workspaceMode } : {}),
       ...(deck?.octopus ? { octopus: deck.octopus } : {}),
     };
