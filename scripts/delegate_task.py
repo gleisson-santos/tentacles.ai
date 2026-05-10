@@ -12,19 +12,29 @@ def delegate(agent_id, prompt, task_id):
         f"IMPORTANTE: Ao concluir com sucesso, grave 'OK|Sua mensagem de confirmação' "
         f"no arquivo: outputs/.status/{task_id}.done"
     )
-    
+    # Obter a preferência de agente da API (Gemini vs Claude)
+    preferred_provider = "claude-code"
+    try:
+        with httpx.Client(timeout=5) as client:
+            ui_resp = client.get(f"{OCTOGENT_API}/api/ui-state")
+            if ui_resp.status_code == 200:
+                preferred_provider = ui_resp.json().get("preferredAgentProvider", "claude-code")
+    except Exception:
+        pass
+
     payload = {
         "name": f"Tarefa: {agent_id.replace('-', ' ').title()}",
         "tentacleId": agent_id,
         "initialPrompt": final_prompt,
-        "agentProvider": "claude-code",
-        "workspaceMode": "shared"
+        "agentProvider": preferred_provider,
+        "workspaceMode": "shared",
+        "parentTerminalId": os.environ.get("OCTOGENT_SESSION_ID")
     }
     
     try:
         with httpx.Client(timeout=10) as client:
             resp = client.post(f"{OCTOGENT_API}/api/terminals", json=payload)
-            if resp.status_code == 200:
+            if resp.status_code in [200, 201]:
                 data = resp.json()
                 print(f"SUCCESS: Terminal {agent_id} criado com ID {data.get('terminalId')}")
             else:

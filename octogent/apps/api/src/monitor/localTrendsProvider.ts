@@ -24,7 +24,7 @@ export class LocalTrendsProvider implements MonitorProviderAdapter {
       // 1. Sincroniza termos
       const config = {
         searchTerms: args.queryTerms,
-        refreshIntervalMinutes: 1
+        refreshIntervalMinutes: 30
       };
       await writeFile(configPath, JSON.stringify(config, null, 2));
 

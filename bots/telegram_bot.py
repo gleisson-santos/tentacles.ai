@@ -177,9 +177,12 @@ async def _handle_gmail_send_dashboard(update, params: dict) -> str:
         f"python scripts/delegate_task.py --agent google-assistant --prompt 'ENVIE UM EMAIL: DESTINATARIO: {to} CONTEUDO: {body}' --task_id {task_id}\n"
         f"Sua missao termina assim que o comando acima retornar SUCCESS."
     )
+    async def fallback():
+        res = await _handle_gmail_send(params)
+        return None, "⚠️ Dashboard offline. Enviando localmente...\n\n" + res
+
     file_path, result = await _execute_via_dashboard(
-        update, task_id, f"Email: {to[:15]}", "orchestrator", prompt, 
-        lambda: "Dashboard offline. Enviando localmente... " + _handle_gmail_send(params)
+        update, task_id, f"Email: {to[:15]}", "orchestrator", prompt, fallback
     )
     return result
 
@@ -195,9 +198,12 @@ async def _handle_calendar_create_dashboard(update, params: dict) -> str:
         f"python scripts/delegate_task.py --agent google-assistant --prompt 'CRIE UM EVENTO: {json.dumps(params)}' --task_id {task_id}\n"
         f"Sua missao termina assim que o comando acima retornar SUCCESS."
     )
+    async def fallback():
+        res = await _handle_calendar_create(params)
+        return None, "⚠️ Dashboard offline. Criando localmente...\n\n" + res
+
     file_path, result = await _execute_via_dashboard(
-        update, task_id, f"Agenda: {title[:15]}", "orchestrator", prompt,
-        lambda: "Dashboard offline. Criando localmente... " + _handle_calendar_create(params)
+        update, task_id, f"Agenda: {title[:15]}", "orchestrator", prompt, fallback
     )
     return result
 
@@ -259,6 +265,33 @@ async def _handle_linkedin_post(topic: str) -> str:
         },
     ], temperature=0.7, max_tokens=600)
     return f"💼 *Post LinkedIn pronto:*\n\n{text}"
+
+async def _handle_linkedin_post_dashboard(update, topic: str) -> str:
+    task_id = f"ln-{int(_time.time())}"
+    topic_clean = topic.replace("'", "")
+    child_prompt = (
+        f"TAREFA: Escreva e publique um post no LinkedIn sobre: {topic_clean}. "
+        f"DIRETO AO PONTO: NAO LEIA ARQUIVOS COMO CLAUDE.md OU DEV_PROGRESS.md ANTES DE EXECUTAR! VÁ DIRETO PARA A AÇÃO. "
+        f"1. Pense no conteudo. "
+        f"2. Use generate_image() para criar a imagem (Prompt EM INGLES, estilo moderno/cinematografico, PROIBIDO cliches como cerebros 3D/robos, e PROIBIDO textos na imagem). "
+        f"3. Use create_post_with_image() para publicar."
+    )
+    prompt = (
+        f"Voce e o Maestro (Orchestrator). O usuario pediu um post no LinkedIn.\n"
+        f"REGRA CRITICA: VOCE NAO PODE POSTAR DIRETAMENTE. \n"
+        f"TAREFA: Execute OBRIGATORIAMENTE o comando no shell: \n"
+        f"python scripts/delegate_task.py --agent linkedin-poster --prompt '{child_prompt}' --task_id {task_id}\n"
+        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+    )
+    
+    async def fallback():
+        res = await _handle_linkedin_post(topic)
+        return None, "⚠️ Dashboard offline. Gerado localmente (NÃO PUBLICADO):\n\n" + res
+
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"LinkedIn: {topic[:15]}", "orchestrator", prompt, fallback
+    )
+    return result
 
 def _handle_brain_status() -> str:
     try:
@@ -322,29 +355,34 @@ async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fal
                     return await fallback_fn()
                 return await asyncio.to_thread(fallback_fn)
 
-            await update.message.reply_text(f"🚀 Enviado para o Dashboard via Agente `{preferred_provider}` (ID: `{terminal_id}`).\nAguardando conclusão...")
+            async def _poll_status():
+                status_file = STATUS_DIR / f"{task_id}.done"
+                STATUS_DIR.mkdir(parents=True, exist_ok=True)
+                
+                max_retries = 450 # 30 minutos (450 * 4 = 1800s)
+                for _ in range(max_retries):
+                    if status_file.exists():
+                        content = status_file.read_text(encoding="utf-8").strip()
+                        status_file.unlink()
+                        
+                        if os.path.exists(content):
+                            await _reply(update, "✅ *Tarefa concluída com sucesso!*", content)
+                            return
+                        
+                        if content.startswith("OK|"):
+                            await _reply(update, content.replace("OK|", "✅ *Concluído:*\n"))
+                            return
+                        
+                        await _reply(update, f"✅ {content}")
+                        return
+                    await asyncio.sleep(4)
+                
+                await _reply(update, "⚠️ *Timeout:* A tarefa demorou mais de 30 minutos. Ela pode ainda estar rodando no Dashboard.")
 
-            status_file = STATUS_DIR / f"{terminal_id}.done"
-            STATUS_DIR.mkdir(parents=True, exist_ok=True)
-
-            max_retries = 60 # Aumentado para 240 segundos
-            for _ in range(max_retries):
-                if status_file.exists():
-                    content = status_file.read_text(encoding="utf-8").strip()
-                    status_file.unlink()
-                    
-                    # Se o conteúdo for um caminho de arquivo existente, envia o arquivo
-                    if os.path.exists(content):
-                        return content, f"✅ Tarefa concluída com sucesso!"
-                    
-                    # Se for uma mensagem de sucesso (ex: OK|Mensagem), limpa e retorna
-                    if content.startswith("OK|"):
-                        return None, content.replace("OK|", "✅ ")
-                    
-                    return None, f"✅ {content}"
-                await asyncio.sleep(4)
-
-            return None, "⚠️ Timeout: A tarefa está demorando muito no Dashboard. Verifique a tela de terminais."
+            asyncio.create_task(_poll_status())
+            
+            initial_msg = "🚀 *Tarefa delegada ao Dashboard!*\n🤖 O agente responsável iniciou o trabalho em segundo plano.\n⏳ _Avisarei aqui quando concluir. Você pode continuar me mandando outras tarefas!_"
+            return None, initial_msg
 
         except Exception as e:
             log("telegram", "erro_geral_dashboard", str(e))
@@ -457,15 +495,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "Depois de analisar, gere um post completo para o tema mais forte, gere a imagem e publique.\n"
                 "Ao final, escreva 'POST_DONE: [TEMA]' no canal tentacles-events."
             )
+            async def fallback():
+                return None, "⚠️ Dashboard offline. Não consigo buscar notícias em tempo real agora."
             file_path, result = await _execute_via_dashboard(
-                update, task_id, "LinkedIn: Análise de Tendências", "linkedin-poster",
-                prompt, lambda: "⚠️ Dashboard offline. Não consigo buscar notícias em tempo real agora."
+                update, task_id, "LinkedIn: Análise de Tendências", "linkedin-poster", prompt, fallback
             )
             await _reply(update, result, file_path)
             return
         else:
             try:
-                result = await _handle_linkedin_post(user_msg)
+                result = await _handle_linkedin_post_dashboard(update, user_msg)
                 log_octogent("telegram", "linkedin_post_gerado", user_msg[:50])
             except Exception as e:
                 result = f"❌ Erro: {str(e)[:200]}"
@@ -481,9 +520,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Use a ferramenta MCP pdf_create.\n"
             f"Ao concluir, grave o caminho do PDF em outputs/.status/{task_id}.done"
         )
+        async def fallback():
+            return await _handle_pdf_create(user_msg)
+
         file_path, result = await _execute_via_dashboard(
-            update, task_id, f"PDF: {user_msg[:25]}", "files-assistant",
-            prompt, lambda: _handle_pdf_create(user_msg),
+            update, task_id, f"PDF: {user_msg[:25]}", "files-assistant", prompt, fallback
         )
         await _reply(update, result, file_path)
         return
@@ -497,9 +538,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Use a ferramenta MCP pptx_create.\n"
             f"Ao concluir, grave o caminho do arquivo em outputs/.status/{task_id}.done"
         )
+        async def fallback():
+            return await _handle_pptx_create(user_msg)
+
         file_path, result = await _execute_via_dashboard(
-            update, task_id, f"PPTX: {user_msg[:25]}", "files-assistant",
-            prompt, lambda: _handle_pptx_create(user_msg),
+            update, task_id, f"PPTX: {user_msg[:25]}", "files-assistant", prompt, fallback
         )
         await _reply(update, result, file_path)
         return
@@ -527,9 +570,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Use a ferramenta MCP pdf_create.\n"
                 f"Ao concluir, grave o caminho do PDF em outputs/.status/{task_id}.done"
             )
+            async def fallback():
+                return await _handle_pdf_create(topic)
+
             file_path, result = await _execute_via_dashboard(
-                update, task_id, f"PDF: {topic[:25]}", "files-assistant",
-                prompt, lambda: _handle_pdf_create(topic),
+                update, task_id, f"PDF: {topic[:25]}", "files-assistant", prompt, fallback
             )
 
         elif intent == "pptx_create":
@@ -543,9 +588,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Use a ferramenta MCP pptx_create.\n"
                 f"Ao concluir, grave o caminho do arquivo em outputs/.status/{task_id}.done"
             )
+            async def fallback():
+                return await _handle_pptx_create(topic)
+
             file_path, result = await _execute_via_dashboard(
-                update, task_id, f"PPTX: {topic[:25]}", "files-assistant",
-                prompt, lambda: _handle_pptx_create(topic),
+                update, task_id, f"PPTX: {topic[:25]}", "files-assistant", prompt, fallback
             )
 
         elif intent == "linkedin_analyze":
@@ -553,10 +600,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await asyncio.sleep(1)
             task_id = f"ln-an-{int(_time.time())}"
             prompt = "Buscando noticias e gerando post automatico no Dashboard..."
-            file_path, result = await _execute_via_dashboard(update, task_id, "LinkedIn: Auto Análise", "linkedin-poster", prompt, lambda: "Dashboard offline.")
+            async def fallback():
+                return None, "⚠️ Dashboard offline."
+            file_path, result = await _execute_via_dashboard(update, task_id, "LinkedIn: Auto Análise", "linkedin-poster", prompt, fallback)
         
         elif intent == "linkedin_post":
-            result = await _handle_linkedin_post(params.get("topic", user_msg))
+            result = await _handle_linkedin_post_dashboard(update, params.get("topic", user_msg))
         elif intent == "gmail_send":
             result = await _handle_gmail_send_dashboard(update, params)
         elif intent == "gmail_list":

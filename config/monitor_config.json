@@ -1,6 +1,8 @@
 {
   "searchTerms": [
-    "A casa dos dragões"
+    "Claude Code CLI",
+    "Power BI",
+    "Make.com"
   ],
-  "refreshIntervalMinutes": 1
+  "refreshIntervalMinutes": 30
 }

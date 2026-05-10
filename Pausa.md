@@ -1,0 +1,1 @@
+Atualize o CLAUDE E GEMINI.md, atualize a DEV_PROGRESS.md, atualize a memoria do projeto se se caso houve alguma melhora muito importante, atualzie o README.md TAMBEM. e apos isso faça os Commits e o Push para o Git. 

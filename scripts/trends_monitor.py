@@ -9,7 +9,6 @@ import urllib.parse
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
-from groq import Groq
 
 # Fix Windows encoding
 if sys.platform == "win32":
@@ -24,8 +23,7 @@ OUTPUT_FILE = ROOT_DIR / "outputs" / "trends_data.json"
 CONFIG_FILE = ROOT_DIR / "config" / "monitor_config.json"
 TENTACULO_ID = "trends-intelligence"
 
-# Inicializa Groq
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+# (Sem necessidade de cliente SDK)
 
 def get_octogent_api():
     return os.getenv("OCTOGENT_API_URL", "http://127.0.0.1:8787")
@@ -77,52 +75,71 @@ def load_config():
 
 async def summarize_news(title, source):
     """
-    Usa Groq para criar um resumo rápido e atraente da notícia.
+    Usa OpenRouter para criar um resumo rápido e atraente da notícia.
     """
     try:
         prompt = f"Crie um resumo atraente e informativo (em 2-3 parágrafos) sobre esta notícia: '{title}'. Fonte: {source}. Foco em impacto tecnológico e tendências de mercado."
         
-        # Faz a chamada Groq de forma não bloqueante
-        completion = await asyncio.to_thread(
-            client.chat.completions.create,
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=400
-        )
-        return completion.choices[0].message.content
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "http://localhost:8787",
+            "X-Title": "Tentacles Trends"
+        }
+        
+        payload = {
+            "model": "google/gemini-2.5-flash",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 400
+        }
+        
+        async with httpx.AsyncClient() as client:
+            resp = await client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                return data["choices"][0]["message"]["content"]
+            else:
+                return f"Erro na API OpenRouter ({resp.status_code}): {resp.text[:100]}"
+                
     except Exception as e:
         return f"Resumo temporariamente indisponível. (Erro: {e})"
 
 async def fetch_google_news(terms):
-    clean_terms = [t.strip().replace("\n", "").replace("\r", "") for t in terms[:5]]
-    query = " OR ".join([f'"{t}"' for t in clean_terms])
-    encoded_query = urllib.parse.quote(query)
-    url = f"https://news.google.com/rss/search?q={encoded_query}&hl=pt-BR&gl=BR&ceid=BR:pt-419"
+    clean_terms = [t.strip().replace("\n", "").replace("\r", "") for t in terms[:5] if t.strip()]
+    all_news_items = []
     
-    try:
-        # feedparser é síncrono, rodamos em thread
-        feed = await asyncio.to_thread(feedparser.parse, url)
-        news_items = []
-        # Pegamos os 5 mais recentes para resumir
-        for entry in feed.entries[:5]:
-            await update_tentacle_status("processing", f"Resumindo: {entry.title[:30]}...")
-            summary = await summarize_news(entry.title, "Google News")
+    for term in clean_terms:
+        # Envolver o termo em aspas garante que o Google News faça "Exact Match" (Correspondência Exata)
+        encoded_term = urllib.parse.quote(f'"{term}"')
+        url = f"https://news.google.com/rss/search?q={encoded_term}&hl=pt-BR&gl=BR&ceid=BR:pt-419"
+        
+        try:
+            # feedparser é síncrono, rodamos em thread
+            feed = await asyncio.to_thread(feedparser.parse, url)
             
-            # Hora da análise (agora)
-            analysis_time = datetime.now().strftime("%d/%m/%Y %H:%M")
+            # Pegamos apenas os 2 mais recentes POR TERMO para economizar tokens do Groq (que tem limite diário)
+            for entry in feed.entries[:2]:
+                await update_tentacle_status("processing", f"Resumindo: {entry.title[:30]}...")
+                summary = await summarize_news(entry.title, "Google News")
+                
+                # Hora da análise (agora)
+                analysis_time = datetime.now().strftime("%d/%m/%Y %H:%M")
+                
+                all_news_items.append({
+                    "term": term,
+                    "title": entry.title,
+                    "link": entry.link,
+                    "published": entry.published, # Data original
+                    "analysis_time": analysis_time, # Data do resumo
+                    "source": "Google News",
+                    "summary": summary
+                })
+                # Pequena pausa para a API do Groq não dar bloqueio (Rate Limit 429)
+                await asyncio.sleep(2)
+        except Exception as e:
+            await update_tentacle_status("error", f"Falha News no termo {term}: {str(e)[:50]}")
             
-            news_items.append({
-                "title": entry.title,
-                "link": entry.link,
-                "published": entry.published, # Data original
-                "analysis_time": analysis_time, # Data do resumo
-                "source": "Google News",
-                "summary": summary
-            })
-        return news_items
-    except Exception as e:
-        await update_tentacle_status("error", f"Falha News: {str(e)[:50]}")
-        return []
+    return all_news_items
 
 async def update_monitor():
     config = load_config()

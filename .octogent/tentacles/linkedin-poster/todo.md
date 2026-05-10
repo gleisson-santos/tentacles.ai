@@ -1,11 +1,10 @@
 # Linkedin Poster — Todo
 
 ## Backlog
-- [ ] Definir ferramentas e responsabilidades deste agente
-- [ ] Implementar lógica principal
-- [ ] Integrar com orchestrator via canal clilink-events
-- [ ] Adicionar testes
-- [ ] Documentar no CONTEXT.md
+- [x] Definir ferramentas e responsabilidades deste agente
+- [x] Implementar lógica principal
+- [x] Adicionar testes
+- [x] Documentar no CONTEXT.md
 
 ## Concluído
 - [x] Tentáculo criado via new_tentacle.py

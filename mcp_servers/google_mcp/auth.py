@@ -28,8 +28,13 @@ def get_credentials() -> Credentials:
         creds = Credentials.from_authorized_user_file(str(TOKEN_FILE), SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"  Erro ao atualizar token: {e}. Iniciando novo fluxo...")
+                creds = None # Força novo fluxo
+        
+        if not creds or not creds.valid:
             if not SECRET_FILE.exists():
                 raise FileNotFoundError(
                     f"\n{'='*55}\n"

@@ -4,7 +4,7 @@
 Automação completa de postagens no LinkedIn com IA de texto (Groq/OpenRouter) e imagem (Stability AI). Suporta posts com texto puro e posts com imagem gerada.
 
 ## Key Files
-- `mcp_servers/linkedin_mcp/server.py` — **MCP principal** (usar este, não linkedin-poster/)
+- `mcp_servers/linkedin_mcp/server.py` — **MCP principal**
 - `auto_poster.py` — Loop autônomo de postagem a cada 2h
 - `~/.linkedin_mcp_token.json` — Token OAuth2 (não commitar)
 

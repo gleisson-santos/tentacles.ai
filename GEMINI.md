@@ -67,7 +67,7 @@ Telegram → Bot (intent detection) → Dashboard API → Orchestrator Terminal
 ## Arquitetura do Gráfico de Orquestração (Hierarquia)
 
 - **Lógica de hierarquia:** `octogent/apps/web/src/app/hooks/useCanvasGraphData.ts`
-- **Curvatura das linhas:** `octogent/apps/web/src/components/canvas/OctopusNode.tsx`
+- **Curvatura das lines:** `octogent/apps/web/src/components/canvas/OctopusNode.tsx`
 - **Animações/bolinhas:** `octogent/apps/web/src/components/CanvasPrimaryView.tsx`
 
 O sistema suporta Deep Nesting (Pai > Filho > Neto) via `parentTerminalId`.
@@ -92,7 +92,7 @@ python scripts/delegate_task.py --agent google-assistant --prompt "ENVIE EMAIL: 
 python mcp_servers/google_mcp/auth.py
 ```
 
-## Estado Atual (09/05/2026)
+## Estado Atual (10/05/2026)
 
 ### ✅ Funcional
 - Orquestração visual com 8 tentáculos
@@ -102,11 +102,13 @@ python mcp_servers/google_mcp/auth.py
 - Fábrica de Reels (rebrandeada, MCP ativo)
 - Orchestrator + Platform Infra com MCPs reais
 - Multi-LLM via `/brain` no Telegram
+- **Trends Intelligence:** Monitoramento contínuo (30m) com busca exata
+- **Octogent Analytics:** Integração de uso do Gemini e métricas GitHub LIVE
 
 ### 🔴 Pendente
 - LinkedIn Poster: integração ao fluxo de delegação
 - Confirmação "OK|mensagem" padronizada para todos os agentes filhos
-- Trends Intelligence: reativar modo loop
+- Fábrica de Reels: Integrar geração de roteiro com IA + publicação no Telegram
 
 ## Regras e Convenções para Gemini CLI
 

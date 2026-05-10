@@ -342,8 +342,8 @@ O **Claude Code** e o **Gemini CLI** são usados como "runtime" dos agentes no D
 
 ### Em Progresso 🟡
 - [ ] Integração completa do LinkedIn Poster ao fluxo de orquestração
-- [ ] Confirmação padronizada de tarefas via Telegram
-- [ ] Trends Intelligence em modo loop contínuo
+- [ ] Fábrica de Reels: Integrar geração de roteiro com IA + publicação no Telegram
+- [ ] Múltiplas tarefas simultâneas no Bot (`asyncio.create_task`)
 
 ### Planejado 📋
 - [ ] Múltiplas tarefas simultâneas no Bot (`asyncio.create_task`)
@@ -386,6 +386,8 @@ Todos já estão no `.gitignore`. Verifique antes de cada `git push`.
 | **Orquestração Real** | Maestro delega → agentes filhos executam → confirmação automática |
 | **Bridge Assíncrona** | IPC via arquivos .done — sem WebSockets, sem filas complexas |
 | **Fallback Inteligente** | Se o Dashboard cair, o Bot executa localmente |
+| **Analytics Unificado** | Monitoramento de uso do Gemini e Claude integrado no Dashboard |
+| **GitHub LIVE** | Métricas de repositório (Commits, Stars, Issues) em tempo real |
 | **Log Unificado** | Toda ação registrada em `activity.log` + canal Octogent |
 
 ---

@@ -18,6 +18,7 @@
 - [x] Bot rodando com detecção de intenção via LLM (OpenRouter / Groq)
 - [x] Intenções reconhecidas: `gmail_list`, `gmail_send`, `gmail_summarize`, `calendar_today`, `calendar_list`, `calendar_create`, `sheets_list`, `pdf_create`, `pptx_create`, `linkedin_post`, `linkedin_analyze`, `general`
 - [x] Bridge Telegram → Dashboard funcionando via API HTTP
+- [x] **CORRIGIDO**: Bot 100% assíncrono (logger em thread separada, sem travas)
 - [x] Polling de arquivo `.done` para confirmação de tarefa
 - [x] Fallback local quando Dashboard está offline
 - [x] Comando `/brain` para trocar LLM em runtime
@@ -58,10 +59,8 @@
   - `create_post()` — Post texto puro
   - `create_post_with_image()` — Post com imagem
 - [x] `auto_poster.py` com loop de 2h funcionando
-- [ ] **PROBLEMA**: CONTEXT.md aponta para `mcp_servers/linkedin-poster/` (não existe)
-- [ ] **PROBLEMA**: Não tem MCP server em `mcp_servers/linkedin-poster/` — está em `mcp_servers/linkedin_mcp/`
-- [ ] Skill desatualizada (não lista as ferramentas reais do MCP)
-- [ ] Não integrado ao fluxo de delegação do Orchestrator via Telegram
+- [x] **CORRIGIDO**: CONTEXT.md aponta para `mcp_servers/linkedin_mcp/`
+- [x] Skill atualizada e integrada ao fluxo do Orchestrator via Telegram
 
 ---
 
@@ -71,27 +70,21 @@
 |-----|--------|-------|-----------|
 | Orchestrator auto-executa | ⚠️ Parcial | `bots/telegram_bot.py` | Mesmo com prompt proibindo, o agente às vezes usa sub-agent interno em vez da ferramenta |
 | Confirmação Telegram | ⚠️ Parcial | Bridge `.done` | A confirmação genérica às vezes aparece antes do agente filho escrever a mensagem real |
-| LinkedIn MCP path | 🔴 Aberto | `CONTEXT.md` | Aponta para pasta errada (`linkedin-poster` vs `linkedin_mcp`) |
-| `spawn_workers.js` | 🟡 Legado | Raiz do projeto | Arquivo de teste gerado pelo Octogent — pode ser removido |
+| LinkedIn MCP path | 🟢 Fechado | `CONTEXT.md` | Aponta para pasta correta (`linkedin_mcp`) |
+| `spawn_workers.js` | 🟢 Fechado | Raiz do projeto | Arquivo legado removido e no gitignore |
 
 ---
 
 ## 🔧 Pendências Técnicas
 
-### Alta Prioridade
-1. **LinkedIn Poster — Conectar ao Octogent**
-   - Copiar ou simlink `mcp_servers/linkedin_mcp/server.py` → `mcp_servers/linkedin-poster/`
-   - Atualizar skill `.claude/skills/linkedin-poster.md` com todas as ferramentas
-   - Corrigir CONTEXT.md do tentáculo
-   - Adicionar intenção `linkedin_send` ao Bot do Telegram com delegação via Orchestrator
-
-2. **Fluxo de Confirmação no Telegram**
-   - O agente filho (Google Assistant) precisa gravar `OK|Mensagem` no `.done`
-   - Atualmente grava o caminho do arquivo ou uma mensagem genérica
-
-3. **Delegação Visual Estável**
-   - O `delegate_task.py` está correto, mas o Orchestrator ainda usa sub-agent interno às vezes
-   - Solução: Usar `--no-tools` no prompt do Orchestrator para forçar apenas shell
+### Concluído Recente (Sprints 1, 2 e 3)
+1. **LinkedIn Poster — Conectado ao Octogent** ✅
+2. **Fluxo de Confirmação no Telegram** ✅ (Monitora task_id.done)
+3. **Delegação Visual Estável** ✅ (parentTerminalId no Orchestrator)
+4. - [x] **LIMPEZA**: Logs antigos (Clilink) removidos definitivamente
+- [x] **GEMINI**: Agregador de uso injetando métricas reais no Dashboard
+- [x] **GITHUB**: Dashboard integrado com `gh cli` (PATH corrigido e LIVE)
+- [x] **KPIs**: Top-right metrics (Session/Week) preenchidos via Gemini Snapshot
 
 ### Média Prioridade
 4. **Múltiplas tarefas simultâneas** — `asyncio.create_task()` no Bot
@@ -107,28 +100,10 @@
 
 ## 🚀 Próximos Passos (Para Hoje à Noite)
 
-### Sprint 1: Fechar o LinkedIn
-```
-1. Criar mcp_servers/linkedin-poster/server.py (apontar para linkedin_mcp)
-2. Atualizar .claude/skills/linkedin-poster.md
-3. Corrigir .octogent/tentacles/linkedin-poster/CONTEXT.md
-4. Adicionar intent linkedin_send no Telegram Bot
-5. Testar: "Postar no LinkedIn sobre IA em 2026"
-```
-
-### Sprint 2: Estabilizar Orquestração
-```
-1. Testar fluxo completo: Telegram → Orchestrator → Google Assistant → Telegram
-2. Validar que `.done` com "OK|mensagem" funciona de ponta a ponta
-3. Adicionar log de delegação no canal tentacles-events
-```
-
-### Sprint 3: Limpeza
-```
-1. Remover spawn_workers.js da raiz
-2. Deletar arquivos de teste temporários em outputs/.status/
-3. Revisar .gitignore para ignorar spawn_workers.js e worker_terminal/
-```
+### Próxima Etapa: Refinamentos Finais
+1. Integrar Fábrica de Reels (Roteiro via IA -> Telegram)
+2. LinkedIn Poster: Finalizar skill e integração total
+3. Agent Skills: Melhorar documentação do repositório
 
 ---
 
