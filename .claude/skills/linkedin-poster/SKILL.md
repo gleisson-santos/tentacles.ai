@@ -1,3 +1,8 @@
+---
+name: linkedin-poster
+description: Habilidade de linkedin-poster integrada ao ecossistema Tentacles.
+---
+
 # Skill: Linkedin Poster
 
 ## Papel

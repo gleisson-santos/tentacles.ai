@@ -209,7 +209,7 @@ export const RuntimeStatusStrip = ({
           </div>
           <span className="console-status-sparkline-label">COMMITS/DAY · LAST 30 DAYS</span>
         </div>
-        <div className="console-status-usage-mini" aria-label="Claude token usage last 30 days">
+        <div className="console-status-usage-mini" aria-label="Gemini token usage last 30 days">
           {usageBars.length > 0 ? (
             <>
               <div className="console-status-usage-mini-chart">
@@ -227,15 +227,15 @@ export const RuntimeStatusStrip = ({
                 </svg>
               </div>
               <span className="console-status-sparkline-label">
-                CLAUDE TOKENS/DAY · LAST 30 DAYS
+                GEMINI TOKENS/DAY · LAST 30 DAYS
               </span>
             </>
           ) : (
-            <span className="console-status-sparkline-label">CLAUDE USAGE —</span>
+            <span className="console-status-sparkline-label">GEMINI USAGE —</span>
           )}
         </div>
       </div>
-      <div className="console-status-claude-usage" aria-label="Claude usage limits">
+      <div className="console-status-claude-usage" aria-label="Gemini usage limits">
         {onRefreshClaudeUsage && (
           <button
             type="button"
@@ -249,7 +249,7 @@ export const RuntimeStatusStrip = ({
           </button>
         )}
         <span className="console-status-claude-usage-title">
-          CLAUDE
+          GEMINI
           <br />
           USAGE
         </span>

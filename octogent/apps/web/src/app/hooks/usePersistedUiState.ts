@@ -30,7 +30,7 @@ const DEFAULT_MINIMIZED_TERMINAL_IDS: string[] = [];
 const DEFAULT_TERMINAL_WIDTHS: Record<string, number> = {};
 const DEFAULT_CANVAS_OPEN_TERMINAL_IDS: string[] = [];
 const DEFAULT_CANVAS_OPEN_TENTACLE_IDS: string[] = [];
-const DEFAULT_PREFERRED_AGENT_PROVIDER: TerminalAgentProvider = "claude-code";
+const DEFAULT_PREFERRED_AGENT_PROVIDER: TerminalAgentProvider = "gemini-cli";
 
 const areStringArraysEqual = (left: string[] | undefined, right: string[] | undefined) => {
   if (left === right) {

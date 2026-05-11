@@ -85,6 +85,8 @@ async def _universal_query(prompt: str, system_prompt: str = None) -> str:
 
 async def _detect_intent(text: str) -> dict:
     prompt = f"""
+    CONTEXTO TEMPORAL: Hoje é {datetime.now().strftime('%A, %d de %B de %Y, %H:%M')}.
+    
     Analise a intenção do usuário abaixo e retorne um JSON com 'intent' e 'params'.
     Intenções possíveis:
     - gmail_list: listar emails recentes
@@ -98,7 +100,10 @@ async def _detect_intent(text: str) -> dict:
     - pptx_create: criar uma apresentação PowerPoint (precisa de topic)
     - linkedin_post: criar um post para LinkedIn (precisa de topic)
     - linkedin_analyze: analisar notícias e sugerir posts (manual trigger)
+    - youtube_summary: transcrever e resumir vídeo do YouTube (precisa de url)
     - general: conversa comum
+
+    IMPORTANTE: Converta datas relativas como 'amanhã', 'segunda-feira' ou 'às 14h' para o formato ISO 'YYYY-MM-DDTHH:MM:SS' usando o contexto temporal acima.
 
     FORMATO: {{"intent": "...", "params": {{...}}}}
     USUÁRIO: {text}
@@ -168,42 +173,40 @@ async def _handle_gmail_send_dashboard(update, params: dict) -> str:
     to = params.get("to")
     body = params.get("body", "")
     task_id = f"mail-{int(_time.time())}"
+    # Instrução DIRETA para o assistente, sem passar pelo terminal do Orquestrador
     prompt = (
-        f"Voce e o Maestro (Orchestrator). O usuario pediu para enviar um email.\n"
-        f"DESTINATARIO: {to}\n"
-        f"CONTEUDO: {body}\n"
-        f"REGRA CRITICA: VOCE NAO PODE ENVIAR EMAILS DIRETAMENTE. \n"
-        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
-        f"python scripts/delegate_task.py --agent google-assistant --prompt 'ENVIE UM EMAIL: DESTINATARIO: {to} CONTEUDO: {body}' --task_id {task_id}\n"
-        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+        f"Voce e o agente google-assistant do Tentacles.\n"
+        f"TAREFA: Envie um email para {to} com o conteudo: {body}\n"
+        f"DIRETRIZES: Use a ferramenta 'send_email' IMEDIATAMENTE.\n"
+        f"Ao concluir, grave 'OK|Email enviado para {to}' em: outputs/.status/{task_id}.done"
     )
     async def fallback():
         res = await _handle_gmail_send(params)
         return None, "⚠️ Dashboard offline. Enviando localmente...\n\n" + res
 
+    # Delegação DIRETA para google-assistant
     file_path, result = await _execute_via_dashboard(
-        update, task_id, f"Email: {to[:15]}", "orchestrator", prompt, fallback
+        update, task_id, f"Email: {to[:15]}", "google-assistant", prompt, fallback
     )
     return result
 
 async def _handle_calendar_create_dashboard(update, params: dict) -> str:
     title = params.get("title", "Compromisso")
     task_id = f"cal-{int(_time.time())}"
+    # Instrução DIRETA para o assistente
     prompt = (
-        f"Voce e o Maestro (Orchestrator). O usuario quer agendar algo.\n"
-        f"TITULO: {title}\n"
-        f"DADOS: {json.dumps(params)}\n"
-        f"REGRA CRITICA: VOCE NAO PODE ACESSAR O CALENDARIO DIRETAMENTE. \n"
-        f"TAREFA: Execute OBRIGATORIAMENTE o comando: \n"
-        f"python scripts/delegate_task.py --agent google-assistant --prompt 'CRIE UM EVENTO: {json.dumps(params)}' --task_id {task_id}\n"
-        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+        f"Voce e o agente google-assistant do Tentacles.\n"
+        f"TAREFA: Agende o compromisso: {json.dumps(params)}\n"
+        f"DIRETRIZES: Use a ferramenta 'create_calendar_event' agora.\n"
+        f"Ao concluir, grave 'OK|Evento {title} agendado' em: outputs/.status/{task_id}.done"
     )
     async def fallback():
         res = await _handle_calendar_create(params)
         return None, "⚠️ Dashboard offline. Criando localmente...\n\n" + res
 
+    # Delegação DIRETA para google-assistant
     file_path, result = await _execute_via_dashboard(
-        update, task_id, f"Agenda: {title[:15]}", "orchestrator", prompt, fallback
+        update, task_id, f"Agenda: {title[:15]}", "google-assistant", prompt, fallback
     )
     return result
 
@@ -269,27 +272,22 @@ async def _handle_linkedin_post(topic: str) -> str:
 async def _handle_linkedin_post_dashboard(update, topic: str) -> str:
     task_id = f"ln-{int(_time.time())}"
     topic_clean = topic.replace("'", "")
-    child_prompt = (
-        f"TAREFA: Escreva e publique um post no LinkedIn sobre: {topic_clean}. "
-        f"DIRETO AO PONTO: NAO LEIA ARQUIVOS COMO CLAUDE.md OU DEV_PROGRESS.md ANTES DE EXECUTAR! VÁ DIRETO PARA A AÇÃO. "
-        f"1. Pense no conteudo. "
-        f"2. Use generate_image() para criar a imagem (Prompt EM INGLES, estilo moderno/cinematografico, PROIBIDO cliches como cerebros 3D/robos, e PROIBIDO textos na imagem). "
-        f"3. Use create_post_with_image() para publicar."
-    )
+    # O Bot (Maestro) envia a instrução completa direto para o linkedin-poster
     prompt = (
-        f"Voce e o Maestro (Orchestrator). O usuario pediu um post no LinkedIn.\n"
-        f"REGRA CRITICA: VOCE NAO PODE POSTAR DIRETAMENTE. \n"
-        f"TAREFA: Execute OBRIGATORIAMENTE o comando no shell: \n"
-        f"python scripts/delegate_task.py --agent linkedin-poster --prompt '{child_prompt}' --task_id {task_id}\n"
-        f"Sua missao termina assim que o comando acima retornar SUCCESS."
+        f"Voce e o agente linkedin-poster. Sua missao e criar e publicar este post.\n"
+        f"TEMA: {topic_clean}\n"
+        f"1. Crie o texto do post.\n"
+        f"2. Use generate_image() para criar a imagem (moderna/tech, sem texto).\n"
+        f"3. Use create_post_with_image() para publicar.\n"
+        f"Ao concluir, grave 'OK|Post sobre {topic_clean} publicado' em: outputs/.status/{task_id}.done"
     )
-    
     async def fallback():
         res = await _handle_linkedin_post(topic)
         return None, "⚠️ Dashboard offline. Gerado localmente (NÃO PUBLICADO):\n\n" + res
 
+    # Delegação DIRETA para linkedin-poster
     file_path, result = await _execute_via_dashboard(
-        update, task_id, f"LinkedIn: {topic[:15]}", "orchestrator", prompt, fallback
+        update, task_id, f"LinkedIn: {topic[:15]}", "linkedin-poster", prompt, fallback
     )
     return result
 
@@ -307,11 +305,40 @@ def _handle_brain_set(provider: str, model: str = None) -> str:
     except Exception as e:
         return f"❌ Erro ao atualizar cérebro: {e}"
 
+async def _handle_youtube_summary_dashboard(update, url: str) -> str:
+    task_id = f"yt-{int(_time.time())}"
+    prompt = (
+        f"Voce e o agente reels-factory do Tentacles. Sua especialidade e transformar videos em conteudos virais.\n"
+        f"TAREFA: Transcreva o video: {url} e gere um roteiro estruturado.\n\n"
+        f"DIRETRIZES DE EXECUCAO:\n"
+        f"1. Use a ferramenta 'process_youtube_video' IMEDIATAMENTE. Nao perca tempo lendo arquivos de config ou checando chaves.\n"
+        f"2. TRABALHO AUTONOMO: Nao faca perguntas, nao peca confirmacao e NUNCA peca para o usuario apertar Enter.\n"
+        f"3. FORMATO DE SAIDA (OBRIGATORIO):\n"
+        f"   # 🎬 ROTEIRO PARA REELS/SHORTS\n"
+        f"   **[HOOK]**: Frase de impacto para os primeiros 3 segundos.\n"
+        f"   **[CORPO]**: Narrativa dinamica dividida em topicos.\n"
+        f"   **[CTA]**: Chamada para acao clara.\n\n"
+        f"   **💡 INSIGHTS PRINCIPAIS**:\n"
+        f"   - Insight 1\n   - Insight 2\n\n"
+        f"   **#️⃣ HASHTAGS**:\n"
+        f"   #IA #Automacao #Produtividade\n\n"
+        f"4. Ao concluir, grave 'OK|' seguido do ROTEIRO COMPLETO em: outputs/.status/{task_id}.done\n"
+        f"Comece agora."
+    )
+    
+    async def fallback():
+        return None, "⚠️ Dashboard offline. Não consigo transcrever vídeos do YouTube localmente ainda."
+
+    file_path, result = await _execute_via_dashboard(
+        update, task_id, f"YouTube: {url[-10:]}", "reels-factory", prompt, fallback
+    )
+    return result
+
 async def _handle_general(user_msg: str) -> str:
     return await _groq([
         {"role": "system", "content":
             "Você é o assistente Tentacles, agente de produtividade inteligente. "
-            "Pode ajudar com Gmail, Calendar, Sheets, LinkedIn, PDFs e apresentações. "
+            "Pode ajudar com Gmail, Calendar, Sheets, LinkedIn, PDFs, apresentações e transcrição/resumo de vídeos do YouTube. "
             "Responda em português do Brasil de forma direta e útil."
         },
         {"role": "user", "content": user_msg},
@@ -319,29 +346,50 @@ async def _handle_general(user_msg: str) -> str:
 
 # ── Dashboard Bridge ──────────────────────────────────────────────────────────
 
+async def _get_orchestrator_id(client):
+    """Localiza o ID do terminal do Orquestrador para servir de pai visual."""
+    try:
+        resp = await client.get(f"{OCTOGENT_API}/api/terminals")
+        terminals = resp.json()
+        for t in terminals:
+            if t.get("tentacleId") == "orchestrator":
+                return t.get("terminalId")
+    except:
+        pass
+    return None
+
 async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fallback_fn):
     async with httpx.AsyncClient(timeout=10) as client:
         try:
-            # 1. Verifica se o Dashboard está online
+            # 1. Busca o Maestro (Orquestrador) para ser o pai visual
+            parent_id = await _get_orchestrator_id(client)
+
+            # 2. Verifica preferência do Dashboard
             try:
                 resp = await client.get(f"{OCTOGENT_API}/api/ui-state")
                 ui_state = resp.json()
-                preferred_provider = ui_state.get("preferredAgentProvider", "claude-code")
+                preferred_provider = ui_state.get("preferredAgentProvider", "gemini-cli")
             except Exception as e:
-                preferred_provider = "claude-code"
+                preferred_provider = "gemini-cli"
                 log("telegram", "dashboard_offline", f"erro: {e}")
                 if asyncio.iscoroutinefunction(fallback_fn):
                     return await fallback_fn()
                 return await asyncio.to_thread(fallback_fn)
 
-            # 2. Cria terminal
+            # 3. Cria terminal DIRETO no agente, mas com o Orquestrador como Pai Visual
             payload = {
                 "name": name,
                 "tentacleId": tentacle_id,
                 "initialPrompt": prompt,
                 "agentProvider": preferred_provider,
-                "workspaceMode": "shared"
+                "workspaceMode": "shared",
+                "parentTerminalId": parent_id
             }
+
+            # 4. Delay de "Dramatização" para visibilidade da animação
+            initial_msg = "🧠 *Maestro analisando e delegando para o especialista...*"
+            sent_msg = await update.message.reply_text(initial_msg, parse_mode="Markdown")
+            await asyncio.sleep(1.5)
 
             try:
                 resp = await client.post(f"{OCTOGENT_API}/api/terminals", json=payload)
@@ -359,7 +407,7 @@ async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fal
                 status_file = STATUS_DIR / f"{task_id}.done"
                 STATUS_DIR.mkdir(parents=True, exist_ok=True)
                 
-                max_retries = 450 # 30 minutos (450 * 4 = 1800s)
+                max_retries = 450 # 30 minutos
                 for _ in range(max_retries):
                     if status_file.exists():
                         content = status_file.read_text(encoding="utf-8").strip()
@@ -377,12 +425,12 @@ async def _execute_via_dashboard(update, task_id, name, tentacle_id, prompt, fal
                         return
                     await asyncio.sleep(4)
                 
-                await _reply(update, "⚠️ *Timeout:* A tarefa demorou mais de 30 minutos. Ela pode ainda estar rodando no Dashboard.")
+                await _reply(update, "⚠️ *Timeout:* A tarefa demorou mais de 30 minutos.")
 
             asyncio.create_task(_poll_status())
             
-            initial_msg = "🚀 *Tarefa delegada ao Dashboard!*\n🤖 O agente responsável iniciou o trabalho em segundo plano.\n⏳ _Avisarei aqui quando concluir. Você pode continuar me mandando outras tarefas!_"
-            return None, initial_msg
+            await sent_msg.edit_text("🚀 *Tarefa delegada ao Dashboard!*\n🤖 O agente responsável iniciou o trabalho.\n⏳ _Avisarei aqui quando concluir._", parse_mode="Markdown")
+            return None, None
 
         except Exception as e:
             log("telegram", "erro_geral_dashboard", str(e))
@@ -556,6 +604,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lower_msg = user_msg.lower()
         if "pdf" in lower_msg: intent = "pdf_create"
         if "apresentação" in lower_msg or "pptx" in lower_msg or "powerpoint" in lower_msg: intent = "pptx_create"
+        if "youtube" in lower_msg or "vídeo" in lower_msg or "transcre" in lower_msg:
+            # Tentar extrair URL se possível
+            urls = re.findall(r'https?://\S+', user_msg)
+            if urls:
+                intent = "youtube_summary"
+                params["url"] = urls[0]
 
     file_path = None
     try:
@@ -606,6 +660,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         elif intent == "linkedin_post":
             result = await _handle_linkedin_post_dashboard(update, params.get("topic", user_msg))
+        elif intent == "youtube_summary":
+            url = params.get("url")
+            if not url:
+                urls = re.findall(r'https?://\S+', user_msg)
+                url = urls[0] if urls else None
+            
+            if url:
+                result = await _handle_youtube_summary_dashboard(update, url)
+            else:
+                result = "Preciso de uma URL do YouTube para transcrever. Ex: _'Transcreve este vídeo: https://youtube.com/...' _"
         elif intent == "gmail_send":
             result = await _handle_gmail_send_dashboard(update, params)
         elif intent == "gmail_list":

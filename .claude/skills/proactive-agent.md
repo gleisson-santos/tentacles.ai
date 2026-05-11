@@ -1,3 +1,4 @@
+
 # Skill: proactive-agent (Orquestrador Principal)
 
 ## Papel

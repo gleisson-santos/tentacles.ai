@@ -343,7 +343,7 @@ O **Claude Code** e o **Gemini CLI** são usados como "runtime" dos agentes no D
 ### Em Progresso 🟡
 - [ ] Integração completa do LinkedIn Poster ao fluxo de orquestração
 - [ ] Fábrica de Reels: Integrar geração de roteiro com IA + publicação no Telegram
-- [ ] Múltiplas tarefas simultâneas no Bot (`asyncio.create_task`)
+- [x] **Refatoração UI Octogent**: Modal estruturado (Preview fixo/Content scroll) ✅
 
 ### Planejado 📋
 - [ ] Múltiplas tarefas simultâneas no Bot (`asyncio.create_task`)

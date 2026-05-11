@@ -1,3 +1,8 @@
+---
+name: gmail-manager
+description: Habilidade de gmail-manager integrada ao ecossistema Tentacles.
+---
+
 # Skill: gmail-manager
 
 ## Papel

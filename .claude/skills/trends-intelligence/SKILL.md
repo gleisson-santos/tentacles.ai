@@ -1,3 +1,8 @@
+---
+name: trends-intelligence
+description: Habilidade de trends-intelligence integrada ao ecossistema Tentacles.
+---
+
 # Skill: Trends Intelligence
 
 ## Papel

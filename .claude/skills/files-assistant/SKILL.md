@@ -1,3 +1,8 @@
+---
+name: files-assistant
+description: Habilidade de files-assistant integrada ao ecossistema Tentacles.
+---
+
 # Skill: Files Assistant
 
 ## Papel

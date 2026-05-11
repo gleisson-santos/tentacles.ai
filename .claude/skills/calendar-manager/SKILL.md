@@ -1,3 +1,8 @@
+---
+name: calendar-manager
+description: Habilidade de calendar-manager integrada ao ecossistema Tentacles.
+---
+
 # Skill: calendar-manager
 
 ## Papel

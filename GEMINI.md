@@ -4,8 +4,8 @@
 Sistema multi-agente que automatiza: postagem LinkedIn, gestão de Gmail/Calendar/Sheets, criação de PDFs/PPTX, transcrição YouTube → Reels, chatbot Telegram com intenção inteligente — tudo orquestrado visualmente via Octogent Dashboard.
 
 ## Tech Stack
-- **LLM principal:** OpenRouter — `x-ai/grok-4.1-fast`
-- **LLM alternativo:** Groq API — `llama-3.3-70b-versatile`
+- **LLM principal:** Google — `gemini-1.5-pro` (ou Gemini 2.5/3 via Dashboard)
+- **LLM alternativo:** OpenRouter — `x-ai/grok-4.1-fast`
 - **IA de imagem:** Stability AI — `v2beta/stable-image/generate/core`
 - **LinkedIn:** OAuth2 + LinkedIn API v2
 - **Google:** Gmail API + Calendar API + Sheets API + Drive API (OAuth2)
@@ -104,6 +104,7 @@ python mcp_servers/google_mcp/auth.py
 - Multi-LLM via `/brain` no Telegram
 - **Trends Intelligence:** Monitoramento contínuo (30m) com busca exata
 - **Octogent Analytics:** Integração de uso do Gemini e métricas GitHub LIVE
+- **UI Refinement:** Modal de criação de Tentáculos refatorado com separação Preview/Content e Skills colapsáveis.
 
 ### 🔴 Pendente
 - LinkedIn Poster: integração ao fluxo de delegação
@@ -120,4 +121,7 @@ python mcp_servers/google_mcp/auth.py
 6. **LinkedIn MCP:** `mcp_servers/linkedin_mcp/` (underscore!) — não confundir com `linkedin-poster/`
 7. **Delegação:** Usar `scripts/delegate_task.py` para abrir terminais reais no Dashboard
 8. **IPC:** Agente filho deve gravar `OK|mensagem` em `outputs/.status/{task_id}.done`
-9. **Novos agentes:** Usar `scripts/new_tentacle.py` + atualizar `CLAUDE.md` e `DEV_PROGRESS.md`
+9. **Animação Imediata:** No primeiro segundo de qualquer tarefa, execute um comando trivial (ex: `echo 'Agente [nome] iniciando...'`) para garantir que o Dashboard ative a animação de 'PROCESSING'.
+10. **Autonomia Total:** NUNCA peça confirmação, NUNCA peça para o usuário apertar Enter e NUNCA pare para perguntar algo. Se a instrução for clara, execute-a até o fim.
+11. **Novos agentes:** Usar `scripts/new_tentacle.py` + atualizar `CLAUDE.md` e `DEV_PROGRESS.md`
+12. **Octogent UI:** Manter sempre a separação estrutural entre `.deck-add-form-preview` (fixo) e `.deck-add-form-content` (scrollable) nos modais para evitar ocultação do avatar.

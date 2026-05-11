@@ -1,6 +1,6 @@
 # 🐙 Tentacles — Dev Progress Log
 
-> Última atualização: 09/05/2026 — Sessão: Orquestração Visual & Delegação Multi-Agente
+> Última atualização: 10/05/2026 — Sessão: Refatoração Estrutural da UI do Octogent
 
 ---
 
@@ -13,6 +13,8 @@
 - [x] Launcher `start_tentacles.ps1` sobe todos os serviços
 - [x] Canal `tentacles-events` para comunicação entre agentes
 - [x] Log global em `logs/activity.log`
+- [x] **UI REFATORADA**: Modal "New Tentacle" com separação Preview/Content (Avatar sempre visível)
+- [x] **SKILLS ACCORDION**: Seção de habilidades colapsável com toggle nativo
 
 ### Telegram Bot
 - [x] Bot rodando com detecção de intenção via LLM (OpenRouter / Groq)
@@ -22,6 +24,7 @@
 - [x] Polling de arquivo `.done` para confirmação de tarefa
 - [x] Fallback local quando Dashboard está offline
 - [x] Comando `/brain` para trocar LLM em runtime
+- [x] **NOVO**: Suporte a transcrição e resumo de YouTube (reels-factory) via Telegram
 
 ### Google Assistant
 - [x] MCP completo: Gmail, Calendar, Sheets
@@ -128,7 +131,7 @@
 |--------|-----|-------|------------|---------|--------|
 | Google Assistant | ✅ `google_mcp/` | ✅ Completa | ✅ Atualizado | ✅ | 🟢 Funcional |
 | Files Assistant | ✅ `files_mcp/` | ✅ Completa | ✅ | ✅ | 🟢 Funcional |
-| Fábrica de Reels | ✅ `reels-factory/` | ✅ Completa | ✅ | ⚠️ Parcial | 🟡 Em Progresso |
+| Fábrica de Reels | ✅ `reels-factory/` | ✅ Completa | ✅ | ✅ | 🟢 Funcional |
 | Orchestrator | ✅ `orchestrator/` | ✅ Atualizada | ✅ Com proibições | ✅ | 🟡 Em Progresso |
 | Platform Infra | ✅ `platform-infra/` | ✅ Atualizada | ⚠️ | — | 🟡 Em Progresso |
 | LinkedIn Poster | ✅ `linkedin_mcp/` | ⚠️ Desatualizada | 🔴 Path errado | ⚠️ Parcial | 🔴 Incompleto |

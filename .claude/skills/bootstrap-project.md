@@ -1,3 +1,4 @@
+
 # Skill: bootstrap-project
 
 ## Propósito

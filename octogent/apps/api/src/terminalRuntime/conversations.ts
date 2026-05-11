@@ -309,6 +309,13 @@ export const listConversationSessions = (
   if (!existsSync(transcriptDirectoryPath)) {
     return [];
   }
+  
+  // LOG DE DEPURAÇÃO
+  try {
+    const logPath = join(process.cwd(), "debug_path.txt");
+    const fs = require("node:fs");
+    fs.appendFileSync(logPath, `Lendo transcrições de: ${transcriptDirectoryPath}\n`, "utf8");
+  } catch (e) {}
 
   const sessionIds = readdirSync(transcriptDirectoryPath)
     .map((filename) => parseSessionIdFromFilename(filename))

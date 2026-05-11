@@ -1,7 +1,8 @@
+import asyncio
+import time
+import subprocess
+import re
 import os
-import logging
-import httpx
-import json
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
@@ -28,37 +29,53 @@ def get_last_activity(lines: int = 20) -> str:
     except Exception as e:
         return f"Erro ao ler logs: {str(e)}"
 
+import subprocess
+import re
+
 @mcp.tool()
 async def delegate_to_agent(agent_id: str, instruction: str) -> str:
     """
-    Delega uma tarefa para outro agente, criando um novo terminal conectado ao Octoboss.
-    Isso mantém o agente no círculo principal do Dashboard sem 'puxá-lo' para o Orchestrator.
+    Delega uma tarefa para outro agente de forma direta (Visual Tentacle Connection).
     """
     logger.info(f"Delegando para {agent_id}: {instruction}")
     
-    payload = {
-        "name": f"Tarefa: {agent_id.replace('-', ' ').title()}",
-        "tentacleId": agent_id,
-        "initialPrompt": instruction,
-        "agentProvider": "claude-code",
-        "workspaceMode": "shared"
-        # parentTerminalId removido para manter no círculo central
-    }
+    # Extrair task_id se houver
+    task_match = re.search(r"task_id\s+([a-zA-Z0-9-]+)", instruction)
+    task_id = task_match.group(1) if task_match else f"task-{int(time.time())}"
     
+    # Limpar a instrução
+    clean_prompt = re.sub(r"--task_id\s+[a-zA-Z0-9-]+", "", instruction).strip()
+
+    # Obtemos o ID do terminal atual para ser o PAI do próximo
+    parent_id = os.environ.get("OCTOGENT_SESSION_ID")
+
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(f"{OCTOGENT_API}/api/terminals", json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                return (
-                    f"✅ Ordem enviada! O tentáculo '{agent_id}' foi acionado no círculo central. "
-                    f"ID da Tarefa: {data.get('terminalId')}. "
-                    f"Estarei aqui piscando e monitorando o progresso..."
-                )
-            else:
-                return f"❌ Falha ao acionar agente: {resp.text}"
+        # Usamos o script de delegação de forma robusta
+        # Passamos o parent_id explicitamente (sem a flag --no-parent para criar o elo visual)
+        cmd = [
+            "python", "scripts/delegate_task.py",
+            "--agent", agent_id,
+            "--prompt", clean_prompt,
+            "--task_id", task_id
+        ]
+        
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+
+        if process.returncode == 0:
+            return (
+                f"✅ Missão delegada para '{agent_id}' (Task: {task_id}).\n"
+                f"Conexão visual estabelecida. Aguardando processamento do agente..."
+            )
+        else:
+            return f"❌ Erro na delegação: {stderr.decode()}"
+            
     except Exception as e:
-        return f"❌ Erro de comunicação: {str(e)}"
+        return f"❌ Erro crítico: {str(e)}"
 
 if __name__ == "__main__":
     mcp.run()

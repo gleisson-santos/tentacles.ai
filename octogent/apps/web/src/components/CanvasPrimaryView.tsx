@@ -163,50 +163,44 @@ const isEdgeActivityVisible = (target: GraphNode): boolean => {
 };
 
 const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) =>
-  [0, 1, 2].flatMap((index) => [
+  [0, 1, 2, 3, 4].flatMap((index) => [
     <circle
       key={`${keyPrefix}-trail-${index}`}
       className="canvas-edge-activity-dot canvas-edge-activity-dot--trail"
-      r={4.6}
+      r={5.5}
       fill={color}
-      opacity={Math.max(0.14, 0.28 - index * 0.04)}
+      filter="blur(2px)"
+      opacity={Math.max(0.2, 0.4 - index * 0.05)}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.62}s`}
-        dur="1.9s"
+        begin={`${index * 0.25}s`}
+        dur="1.2s"
         repeatCount="indefinite"
         rotate="auto"
-      />
-      <animate
-        attributeName="r"
-        values="3.8;5.2;3.8"
-        dur="1.9s"
-        begin={`${index * 0.62}s`}
-        repeatCount="indefinite"
       />
     </circle>,
     <circle
       key={`${keyPrefix}-dot-${index}`}
       className="canvas-edge-activity-dot"
-      r={3.2}
-      fill="#fff4cc"
+      r={3.8}
+      fill="#ffffff"
       stroke={color}
-      strokeWidth={1.2}
-      opacity={Math.max(0.7, 1 - index * 0.08)}
+      strokeWidth={2}
+      style={{ filter: `drop-shadow(0 0 6px ${color})` }}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.62}s`}
-        dur="1.9s"
+        begin={`${index * 0.25}s`}
+        dur="1.2s"
         repeatCount="indefinite"
         rotate="auto"
       />
       <animate
         attributeName="r"
-        values="2.8;3.8;2.8"
-        dur="1.9s"
-        begin={`${index * 0.62}s`}
+        values="3;5;3"
+        dur="0.6s"
+        begin={`${index * 0.25}s`}
         repeatCount="indefinite"
       />
     </circle>,

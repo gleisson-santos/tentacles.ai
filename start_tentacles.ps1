@@ -6,17 +6,18 @@ Write-Host "========================================" -ForegroundColor Magenta
 Write-Host "   TENTACLES.AI - INICIANDO PLATAFORMA" -ForegroundColor Magenta
 Write-Host "========================================" -ForegroundColor Magenta
 
-# 0. Sincronização de Uso (Gemini + Outros)
+# 0. Sincronização e Limpeza (Gemini + Padrões)
 $env:PATH = "C:\Program Files\GitHub CLI\;" + $env:PATH
-Write-Host "[0/3] Sincronizando métricas de uso (Gemini)..." -ForegroundColor Yellow
+Write-Host "[0/3] Configurando Gemini como padrão e sincronizando métricas..." -ForegroundColor Yellow
+python scripts/enforce_gemini.py
 python scripts/usage_aggregator.py
+python scripts/sync_conversations.py
 
 # 1. Dashboard Octogent
 Write-Host "[1/3] Abrindo Dashboard na porta 8787..." -ForegroundColor Yellow
 $ROOT_DYNAMIC = $PSScriptRoot
 $env:OCTOGENT_PORT = "8787"
 $env:OCTOGENT_WORKSPACE_CWD = $ROOT_DYNAMIC
-# Mudança crucial: Iniciamos da RAIZ dinâmica, apontando para o binário na subpasta
 Start-Process cmd -ArgumentList "/k", "title Octogent Dashboard && set PATH=C:\Program Files\GitHub CLI\;%PATH% && set OCTOGENT_PORT=8787 && set OCTOGENT_WORKSPACE_CWD=$ROOT_DYNAMIC && cd /d $ROOT_DYNAMIC && node octogent/bin/octogent"
 
 # 2. Trends Intelligence (Monitor de Notícias)

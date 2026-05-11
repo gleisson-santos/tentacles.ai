@@ -140,14 +140,15 @@ const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) 
     <circle
       key={`${keyPrefix}-trail-${index}`}
       className="canvas-edge-activity-dot canvas-edge-activity-dot--trail"
-      r={3 + index * 0.5}
+      r={5.5}
       fill={color}
-      opacity={Math.max(0.1, 0.4 - index * 0.05)}
+      filter="blur(2px)"
+      opacity={Math.max(0.2, 0.4 - index * 0.05)}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.4}s`}
-        dur="1.5s"
+        begin={`${index * 0.25}s`}
+        dur="1.2s"
         repeatCount="indefinite"
         rotate="auto"
       />
@@ -155,25 +156,24 @@ const renderEdgeActivityDots = (path: string, color: string, keyPrefix: string) 
     <circle
       key={`${keyPrefix}-dot-${index}`}
       className="canvas-edge-activity-dot"
-      r={4}
-      fill="#fff"
+      r={3.8}
+      fill="#ffffff"
       stroke={color}
-      strokeWidth={1.5}
-      opacity={1}
-      style={{ filter: "drop-shadow(0 0 4px " + color + ")" }}
+      strokeWidth={2}
+      style={{ filter: `drop-shadow(0 0 6px ${color})` }}
     >
       <animateMotion
         path={path}
-        begin={`${index * 0.4}s`}
-        dur="1.5s"
+        begin={`${index * 0.25}s`}
+        dur="1.2s"
         repeatCount="indefinite"
         rotate="auto"
       />
       <animate
         attributeName="r"
         values="3;5;3"
-        dur="0.8s"
-        begin={`${index * 0.4}s`}
+        dur="0.6s"
+        begin={`${index * 0.25}s`}
         repeatCount="indefinite"
       />
     </circle>,
@@ -261,8 +261,32 @@ export const OctopusNode = ({
         );
       })}
 
-      {/* Focused glow — same style as session nodes */}
-      {showFocus && <circle className="canvas-node-focus-glow" r={node.radius - 4} fill={color} />}
+      {/* Focused glow or Processing Halo */}
+      {(showFocus || node.agentRuntimeState === "processing") && (
+        <circle 
+          className={`canvas-node-focus-glow ${node.agentRuntimeState === "processing" ? "canvas-node-processing-halo" : ""}`} 
+          r={node.radius + (node.agentRuntimeState === "processing" ? 12 : -4)} 
+          fill={color} 
+          opacity={node.agentRuntimeState === "processing" ? 0.3 : 1}
+        >
+          {node.agentRuntimeState === "processing" && (
+            <animate
+              attributeName="r"
+              values={`${node.radius + 10};${node.radius + 20};${node.radius + 10}`}
+              dur="1.5s"
+              repeatCount="indefinite"
+            />
+          )}
+          {node.agentRuntimeState === "processing" && (
+            <animate
+              attributeName="opacity"
+              values="0.2;0.5;0.2"
+              dur="1.5s"
+              repeatCount="indefinite"
+            />
+          )}
+        </circle>
+      )}
 
       {/* Octopus glyph via foreignObject */}
       <foreignObject

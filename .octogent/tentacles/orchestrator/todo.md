@@ -1,10 +1,6 @@
 # Orchestrator — Todo
 
 ## Backlog
-- [ ] Definir ferramentas e responsabilidades deste agente
-- [ ] Implementar lógica principal
-- [ ] Adicionar testes
-- [ ] Documentar no CONTEXT.md
 
 ## Concluído
 - [x] Tentáculo criado via new_tentacle.py

@@ -1,3 +1,8 @@
+---
+name: reels-factory
+description: Habilidade de reels-factory integrada ao ecossistema Tentacles.
+---
+
 # Skill: Fábrica de Reels
 
 ## Papel

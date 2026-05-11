@@ -304,6 +304,22 @@ export const useCanvasGraphData = ({
       ...(firstActiveTerminal ? { workspaceMode: firstActiveTerminal.workspaceMode } : {}),
       ...(deck?.octopus ? { octopus: deck.octopus } : {}),
     };
+
+    // LÓGICA DE PROPAGAÇÃO: Se este nó é o Orquestrador e tem filhos trabalhando, ele também brilha!
+    if (tentacleId === "orchestrator") {
+        const isAnyChildWorking = columns.some(t => {
+            if (!t.parentTerminalId) return false;
+            const parent = columns.find(c => c.terminalId === t.parentTerminalId);
+            if (parent?.tentacleId === "orchestrator") {
+                const info = agentRuntimeStates?.get(t.terminalId);
+                return info && info.state !== "idle";
+            }
+            return false;
+        });
+        if (isAnyChildWorking) {
+            node.agentRuntimeState = "processing";
+        }
+    }
     nodes.push(node);
     currentNodesById.set(tentacleNodeId, node);
 
@@ -312,9 +328,8 @@ export const useCanvasGraphData = ({
       for (const activeTerminal of activeTerminals) {
         const sessionNodeId = buildActiveSessionNodeId(activeTerminal.terminalId);
         const prevSession = prevNodes.get(sessionNodeId);
-        const parentNodeId = activeTerminal.parentTerminalId
-          ? buildActiveSessionNodeId(activeTerminal.parentTerminalId)
-          : tentacleNodeId;
+        // FORÇAR conexão com o nó do Tentáculo (Agente) para evitar aninhamento visual de terminais
+        const parentNodeId = tentacleNodeId;
         const parentNode = currentNodesById.get(parentNodeId) ?? node;
         const jitter = () => (Math.random() - 0.5) * 60;
 
@@ -373,13 +388,19 @@ export const useCanvasGraphData = ({
 
     let sourceNodeId = OCTOBOSS_NODE_ID;
     const tentacleTerminals = activeTerminalsByTentacle.get(tentacleId);
-    const parentTerminalId = tentacleTerminals?.find((t) => t.parentTerminalId)?.parentTerminalId;
-
-    if (parentTerminalId) {
-      const parentTerminal = columns.find((c) => c.terminalId === parentTerminalId);
-      if (parentTerminal && parentTerminal.tentacleId !== tentacleId) {
-        sourceNodeId = buildTentacleNodeId(parentTerminal.tentacleId);
-      }
+    
+    // Se o agente estiver ativo (tendo terminais), forçamos a conexão vindo do Orquestrador
+    // Isso cria o "Tentáculo de Delegação" visual permanente durante a tarefa.
+    if (tentacleId !== "orchestrator" && tentacleTerminals && tentacleTerminals.length > 0) {
+        sourceNodeId = buildTentacleNodeId("orchestrator");
+    } else {
+        const parentTerminalId = tentacleTerminals?.find((t) => t.parentTerminalId)?.parentTerminalId;
+        if (parentTerminalId) {
+            const parentTerminal = columns.find((c) => c.terminalId === parentTerminalId);
+            if (parentTerminal && parentTerminal.tentacleId !== tentacleId) {
+                sourceNodeId = buildTentacleNodeId(parentTerminal.tentacleId);
+            }
+        }
     }
 
     edges.push({ source: sourceNodeId, target: buildTentacleNodeId(tentacleId) });

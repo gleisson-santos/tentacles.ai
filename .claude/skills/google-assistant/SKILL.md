@@ -1,3 +1,8 @@
+---
+name: google-assistant
+description: Habilidade de google-assistant integrada ao ecossistema Tentacles.
+---
+
 # Skill: Google Assistant (Fábrica de Produtividade)
 
 ## Papel
